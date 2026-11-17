@@ -3,10 +3,10 @@
 1. Takes Lead I from ptbxl_preprocessed_cache.npz and writes it as int16 ADC
    counts (PTB-XL is stored at 1000 LSB/mV, so the round trip is lossless).
 2. Runs the host build of firmware/ecg_features on that file.
-3. Recomputes the features with tools/reference_features.py and compares.
+3. Recomputes the features with scripts/reference_features.py and compares.
 
 Usage (from the repo root):
-    python tools/compare_features.py --exe build/lead1_host.exe [--split test] [--limit N]
+    python scripts/compare_features.py --exe build/lead1_host.exe [--split test] [--limit N]
 """
 import argparse
 import os
@@ -16,6 +16,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from project import CACHE_FILE  # noqa: E402
 from reference_features import CACHE_COLUMNS, FEATURE_NAMES, extract_lead1_features  # noqa: E402
 
 LSB_PER_MV = 1000  # PTB-XL header gain
@@ -24,7 +25,7 @@ REL_TOL, ABS_TOL = 1e-3, 1e-3
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cache", default="ptbxl_preprocessed_cache.npz")
+    ap.add_argument("--cache", default=str(CACHE_FILE))
     ap.add_argument("--exe", default=os.path.join("build", "lead1_host.exe"))
     ap.add_argument("--split", choices=["train", "test"], default="test")
     ap.add_argument("--limit", type=int, default=0, help="0 = all records")

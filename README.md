@@ -49,7 +49,7 @@ Status and open issues: `docs/phase1_feature_port.md`.
     *   [x] Pan-Tompkins style R-peak detection (filtfilt, squared derivative, moving-window integration, scipy-equivalent `find_peaks`).
     *   [x] HRV metrics (HR stats, RR stats, SDNN, RMSSD, pNN50), Hjorth complexity, QRS envelope width.
     *   [x] Frequency-domain features (Baseline Wander, SNR) via an in-place 256-point FFT Welch PSD (`esp-dsp` does not apply to the RP2040).
-    *   [x] Host parity test against the Python reference: 21,387 / 21,388 PTB-XL windows match (`tools/compare_features.py`).
+    *   [x] Host parity test against the Python reference: 21,387 / 21,388 PTB-XL windows match (`scripts/compare_features.py`).
     *   [ ] PR / QT / QTc: Python implementation is broken, fix before porting.
 *   [ ] **Implement Hybrid Decision Tree:** Code the orchestrator logic on the RAK11300 to run numerical feature extraction first, and conditionally trigger the CNN inference based on signal quality.
 *   [ ] **Retrain the CNN on Lead I only:** the current model takes Leads I, II, III, but the RA/LA/RL front end provides Lead I only.

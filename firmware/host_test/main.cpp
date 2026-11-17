@@ -1,6 +1,6 @@
 // Host harness: runs the firmware feature extractor over a file of Lead I
 // windows and writes one CSV row per window, so the output can be compared
-// with the Python reference (tools/compare_features.py).
+// with the Python reference (scripts/compare_features.py).
 //
 // Input file (little-endian): int32 n_records, int32 n_samples,
 //                             int16 samples[n_records][n_samples]

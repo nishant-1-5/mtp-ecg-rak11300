@@ -2,7 +2,7 @@
 //
 // C++ port of `extract_ecg_features_corrected()` in fix_cache.py, restricted to
 // the features that only need Lead I (the RA/LA/RL front end cannot record
-// Leads II/III). Python reference: tools/reference_features.py.
+// Leads II/III). Python reference: scripts/reference_features.py.
 //
 // Design rules (see docs/sram_budget.md):
 //   * No heap, no exceptions, no STL containers. All scratch memory is a

@@ -2,7 +2,7 @@ import numpy as np
 import scipy.signal as signal
 from scipy.stats import skew, kurtosis
 
-CACHE_FILE = "ptbxl_preprocessed_cache.npz"
+from project import CACHE_FILE  # data/cache/ptbxl_preprocessed_cache.npz
 
 print(f"Loading raw signals from {CACHE_FILE}...")
 cached = np.load(CACHE_FILE, allow_pickle=True)

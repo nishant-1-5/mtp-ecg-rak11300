@@ -6,8 +6,8 @@
 |---|---|
 | `firmware/ecg_features/ecg_features.{h,cpp}` | Portable C++14 extractor, no heap. Builds for the RP2040 and for the host. |
 | `firmware/host_test/main.cpp` | Host harness: binary file of int16 windows in, CSV of features out. |
-| `tools/reference_features.py` | Python specification: `fix_cache.py::extract_ecg_features_corrected` restricted to Lead I. |
-| `tools/compare_features.py` | Exports PTB-XL Lead I as int16, runs the harness, compares with the reference. |
+| `scripts/reference_features.py` | Python specification: `scripts/fix_cache.py::extract_ecg_features_corrected` restricted to Lead I. |
+| `scripts/compare_features.py` | Exports PTB-XL Lead I as int16, runs the harness, compares with the reference. |
 
 Memory layout and the reasons behind it are in `docs/sram_budget.md`.
 
@@ -37,8 +37,8 @@ Lead II/III.
 New-Item -ItemType Directory -Force build | Out-Null
 g++ -std=c++14 -O2 -Wall -Wextra -Wdouble-promotion -Wfloat-conversion `
     -o build/lead1_host.exe firmware/host_test/main.cpp firmware/ecg_features/ecg_features.cpp
-python tools/compare_features.py --exe build/lead1_host.exe --split test
-python tools/compare_features.py --exe build/lead1_host.exe --split train
+python scripts/compare_features.py --exe build/lead1_host.exe --split test
+python scripts/compare_features.py --exe build/lead1_host.exe --split train
 ```
 
 Add `-DECG_USE_DOUBLE` for a double-precision build (debugging only; on the RP2040 doubles are much
