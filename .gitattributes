@@ -1,0 +1,12 @@
+# Large binary artifacts are stored with Git LFS.
+*.keras filter=lfs diff=lfs merge=lfs -text
+*.joblib filter=lfs diff=lfs merge=lfs -text
+*.tflite filter=lfs diff=lfs merge=lfs -text
+*.npz filter=lfs diff=lfs merge=lfs -text
+*.pptx filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.html filter=lfs diff=lfs merge=lfs -text
+
+# Generated C arrays of the model: keep in git, but don't diff them line by line.
+model_data.h -diff
+model_data.cc -diff

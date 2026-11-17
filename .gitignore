@@ -1,0 +1,12 @@
+# Raw PTB-XL download (~3 GB). Re-download from https://physionet.org/content/ptb-xl/1.0.3/
+dataset/
+
+# Regenerable caches and build output
+data/cache/
+ptbxl_preprocessed_cache.npz
+build/
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
