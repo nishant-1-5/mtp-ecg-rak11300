@@ -156,19 +156,40 @@ def delineate_template(t, rr_ms, params=DEFAULT_PARAMS):
             "iso": iso, "t_amp": t_amp, "p_amp": p_amp}
 
 
-def lead1_intervals(lead1, peaks, rr_ms, params=DEFAULT_PARAMS):
-    """Interval features in ms: (pr, qrs, qt, qtc, n_beats). NaN when not measurable."""
-    x = bandpass(np.asarray(lead1, dtype=np.float64))
-    tmpl, _, n_beats = median_beat(x, peaks, params)
-    nan = float("nan")
+def template_correlation(x, tmpl, r_pos):
+    """Mean Pearson correlation of each usable beat with the median beat (signal
+    quality index). 0 for a flat beat or template; nan if there is no template."""
     if tmpl is None:
-        return nan, nan, nan, nan, n_beats
+        return float("nan")
+    tc = tmpl - tmpl.mean()
+    tv = float(np.dot(tc, tc))
+    cs = []
+    for r in r_pos:
+        if r - PRE < 0 or r + POST >= len(x):
+            continue
+        b = x[r - PRE:r + POST + 1]
+        bc = b - b.mean()
+        den = np.sqrt(float(np.dot(bc, bc)) * tv)
+        cs.append(float(np.dot(bc, tc)) / den if den > 0 else 0.0)
+    return float(np.mean(cs))
+
+
+def lead1_intervals(lead1, peaks, rr_ms, params=DEFAULT_PARAMS, return_quality=False):
+    """Interval features in ms: (pr, qrs, qt, qtc, n_beats). NaN when not measurable.
+    With return_quality=True, also returns the beat-template correlation."""
+    x = bandpass(np.asarray(lead1, dtype=np.float64))
+    tmpl, r_pos, n_beats = median_beat(x, peaks, params)
+    nan = float("nan")
+    tcorr = template_correlation(x, tmpl, r_pos)
+    q = (tcorr,) if return_quality else ()
+    if tmpl is None:
+        return (nan, nan, nan, nan, n_beats) + q
     f = delineate_template(tmpl, rr_ms, params)
     if f is None:
-        return nan, nan, nan, nan, n_beats
+        return (nan, nan, nan, nan, n_beats) + q
     ms = 1000.0 / FS
     qrs = (f["qrs_off"] - f["qrs_on"]) * ms
     pr = (f["qrs_on"] - f["p_on"]) * ms if f["p_on"] is not None else nan
     qt = (f["t_end"] - f["qrs_on"]) * ms if f["t_end"] is not None else nan
     qtc = qt / np.sqrt(rr_ms / 1000.0) if (rr_ms > 0 and not np.isnan(qt)) else nan
-    return pr, qrs, qt, qtc, n_beats
+    return (pr, qrs, qt, qtc, n_beats) + q

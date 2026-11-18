@@ -30,18 +30,23 @@ Full table: `results/lead_set_comparison.md`.
 
 | Model | 3-lead | Lead I | Δ |
 |---|---:|---:|---:|
-| XGBoost (tabular) | 0.7952 | 0.7443 | −0.051 |
-| Random Forest (tabular) | 0.7862 | 0.7321 | −0.054 |
+| XGBoost (tabular) | 0.7952 | 0.7864 | −0.009 |
+| Random Forest (tabular) | 0.7862 | 0.7780 | −0.008 |
 | 1D-CNN float32 | 0.8832 | 0.8302 | −0.053 |
 | **1D-CNN INT8 (deployed)** | 0.8652 | **0.8294** | −0.036 |
 | STFT 2D-CNN | 0.8284 | 0.7851 | −0.043 |
 | ResNet + attention (ceiling) | 0.8941 | 0.8310 | −0.063 |
 
+The Lead I tabular models use the v2 features, with working PR/QRS/QT (`docs/delineation.md`). With
+the original v1 features they scored 0.7443 (XGBoost) and 0.7321 (RF), the same ~0.05 drop as the
+other models.
+
 Deployed Lead I model, per class (INT8 AUC): CD 0.812, HYP 0.790, MI 0.787, NORM 0.887, STTC 0.870.
 
 What this shows:
 
-- **The cost of losing Leads II/III is about 0.05 macro AUC, for every model type.**
+- **With identical features, losing Leads II/III costs about 0.05 macro AUC for every model type.**
+  Fixing the interval features recovered most of that loss for the tabular models.
 - **On Lead I, the 5.7k-parameter 1D-CNN matches the ResNet + attention ceiling** (0.8302 vs
   0.8310). The larger model has nothing more to extract from one lead, so there is no reason to
   deploy a bigger network.

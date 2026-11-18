@@ -465,7 +465,7 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
   // pr, qrs, qt, qtc, _ = delineation.lead1_intervals(lead1, peaks, mean_rr)
   // The integrated signal is no longer needed: buf now holds the 0.5-40 Hz
   // band-passed window.
-  out->pr_ms = out->qrs_ms = out->qt_ms = out->qtc_ms = NAN;
+  out->pr_ms = out->qrs_ms = out->qt_ms = out->qtc_ms = out->template_corr = NAN;
   {
     FiltFilt(kWideBand, adc, n, mv_per_lsb, buf);
     const real_t* const xb = buf + kFiltPad;  // length n
@@ -492,6 +492,30 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
       for (int i = 0; i < kTemplateLen; ++i) {
         for (int k = 0; k < n_beats; ++k) ws->scratch[k] = xb[r_pos[k] - kTemplatePre + i];
         tmpl[i] = Median(ws->scratch, n_beats);
+      }
+      // Signal quality: mean Pearson correlation of each beat with the template
+      // (delineation.template_correlation).
+      {
+        real_t tm = 0;
+        for (int i = 0; i < kTemplateLen; ++i) tm += tmpl[i];
+        tm /= kTemplateLen;
+        real_t tv = 0;
+        for (int i = 0; i < kTemplateLen; ++i) tv += (tmpl[i] - tm) * (tmpl[i] - tm);
+        real_t corr_sum = 0;
+        for (int k = 0; k < n_beats; ++k) {
+          const real_t* b = xb + r_pos[k] - kTemplatePre;
+          real_t bm = 0;
+          for (int i = 0; i < kTemplateLen; ++i) bm += b[i];
+          bm /= kTemplateLen;
+          real_t bv = 0, cov = 0;
+          for (int i = 0; i < kTemplateLen; ++i) {
+            bv += (b[i] - bm) * (b[i] - bm);
+            cov += (b[i] - bm) * (tmpl[i] - tm);
+          }
+          const real_t den = Sqrt(bv * tv);
+          corr_sum += den > 0 ? cov / den : real_t(0);
+        }
+        out->template_corr = corr_sum / static_cast<real_t>(n_beats);
       }
       real_t qrs_on, qrs_off, t_end, p_on;
       if (DelineateTemplate(tmpl, mean_rr, &qrs_on, &qrs_off, &t_end, &p_on)) {

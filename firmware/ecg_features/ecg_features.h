@@ -62,6 +62,8 @@ struct Lead1Features {
   real_t qtc_ms;             // Bazett, using mean_rr
   real_t snr_db;             // Welch power outside vs inside < 0.5 Hz
   real_t baseline_wander;    // fraction of Welch power < 0.5 Hz
+  // Not part of the model feature vector:
+  real_t template_corr;      // mean beat-vs-median-beat correlation (signal quality); NaN if < 3 beats
   uint8_t n_peaks;           // detected R peaks (0 => HRV values are defaults)
   uint8_t n_beats;           // beats in the median template (< 3 => no intervals)
 };

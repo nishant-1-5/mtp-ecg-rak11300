@@ -1,0 +1,39 @@
+{
+  "min_ptp_mv": 0.1,
+  "max_rail_fraction": 0.01,
+  "adc_min": -32768,
+  "adc_max": 32767,
+  "min_peaks": 4,
+  "hr_min_bpm": 30.0,
+  "hr_max_bpm": 220.0,
+  "min_beats": 3,
+  "tachy_bpm": 100.0,
+  "brady_bpm": 60.0,
+  "wide_qrs_ms": 120.0,
+  "long_pr_ms": 200.0,
+  "min_template_corr": 0.598,
+  "max_baseline_wander": 0.43,
+  "irregular_rr_cv": 0.095,
+  "class_thresholds": {
+    "CD": 0.24,
+    "HYP": 0.24,
+    "MI": 0.24,
+    "NORM": 0.42,
+    "STTC": 0.38
+  },
+  "cd_or_wide_qrs": false,
+  "fit_notes": {
+    "template_corr_rule": "2% quantile of clean training windows",
+    "baseline_wander_rule": "99.5 % quantile of clean training windows",
+    "irregular_rr_cv_rule": "max Youden J for AFIB/AFLT, training folds",
+    "class_threshold_rule": "max F1 per class, INT8 model, on the last 10 % of training windows (Keras validation_split, never trained on)",
+    "cd_val_f1": {
+      "cnn_only": 0.6576,
+      "cnn_or_wide_qrs": 0.6549
+    },
+    "cnn_input": {
+      "scale": 0.0541500449180603,
+      "zero_point": -25
+    }
+  }
+}

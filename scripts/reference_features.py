@@ -32,9 +32,10 @@ def detect_r_peaks(lead1, fs=100):
     return peaks, integrated
 
 
-def extract_lead1_features(lead1, fs=100):
+def extract_lead1_features(lead1, fs=100, with_quality=False):
     """Returns (features[18] in FEATURE_NAMES order, n_peaks). Intervals are NaN
-    when they cannot be measured (e.g. no P wave, fewer than 3 usable beats)."""
+    when they cannot be measured (e.g. no P wave, fewer than 3 usable beats).
+    with_quality=True appends a dict {n_beats, template_corr} (signal quality)."""
     lead1 = np.asarray(lead1)
 
     peaks, integrated = detect_r_peaks(lead1, fs)
@@ -55,7 +56,7 @@ def extract_lead1_features(lead1, fs=100):
     rmssd = np.sqrt(np.mean(rr_diff ** 2)) if len(rr_diff) > 0 else 0.0
     pnn50 = (np.sum(np.abs(rr_diff) > 50) / len(rr_diff)) * 100.0 if len(rr_diff) > 0 else 0.0
 
-    pr, qrs, qt, qtc, _ = lead1_intervals(lead1, peaks, mean_rr)
+    pr, qrs, qt, qtc, n_beats, tcorr = lead1_intervals(lead1, peaks, mean_rr, return_quality=True)
 
     dy, ddy = np.diff(lead1), np.diff(np.diff(lead1))
     var_y, var_dy, var_ddy = np.var(lead1), np.var(dy), np.var(ddy)
@@ -68,6 +69,9 @@ def extract_lead1_features(lead1, fs=100):
     snr = 10 * np.log10((total_power - bw_power) / (bw_power + 1e-8))
     baseline_wander = bw_power / total_power
 
-    return np.array([mean_hr, min_hr, max_hr, hr_std, mean_rr, rr_std, rr_range, rr_cv,
-                     sdnn, rmssd, pnn50, complexity, pr, qrs, qt, qtc, snr, baseline_wander],
-                    dtype=np.float64), len(peaks)
+    feats = np.array([mean_hr, min_hr, max_hr, hr_std, mean_rr, rr_std, rr_range, rr_cv,
+                      sdnn, rmssd, pnn50, complexity, pr, qrs, qt, qtc, snr, baseline_wander],
+                     dtype=np.float64)
+    if with_quality:
+        return feats, len(peaks), {"n_beats": n_beats, "template_corr": tcorr}
+    return feats, len(peaks)
