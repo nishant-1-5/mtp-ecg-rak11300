@@ -39,6 +39,9 @@ FEATURE_NAMES = [
      for stat in ("Mean", "Std", "Skew", "Kurtosis", "PTP", "IQR")]
 # Lead I only: the 18 rhythm/morphology/quality features + Lead I statistics.
 FEATURE_COLUMNS = {"lead1": list(range(24)), "3lead": list(range(36))}[LEAD_SET]
+# Which cache table the classical models use. v2 = scripts/build_lead1_features.py
+# (PR/QRS/QT/QTc from scripts/delineation.py); v1 = fix_cache.py (3-lead baseline).
+FEATURE_TABLE = {"lead1": "X_feat_v2", "3lead": "X_feat"}[LEAD_SET]
 
 # Input convention of the 1D-CNN (notebooks 11 and 20, and the firmware).
 #   none   - raw mV (the original 3-lead model)
@@ -75,10 +78,10 @@ def load_cache(verbose=True):
     X_test = cached["X_test"][:, :, LEADS]
     y_train, y_test = cached["y_train"], cached["y_test"]
     class_names = cached["class_names"]
-    X_feat_train = cached["X_feat_train"][:, FEATURE_COLUMNS]
-    X_feat_test = cached["X_feat_test"][:, FEATURE_COLUMNS]
+    X_feat_train = cached[f"{FEATURE_TABLE}_train"][:, FEATURE_COLUMNS]
+    X_feat_test = cached[f"{FEATURE_TABLE}_test"][:, FEATURE_COLUMNS]
     if verbose:
-        print(f"Lead set  -> {LEAD_SET} (channels {LEADS})")
+        print(f"Lead set  -> {LEAD_SET} (channels {LEADS}, features {FEATURE_TABLE})")
         print(f"Signals   -> Train: {X_train.shape} | Test: {X_test.shape}")
         print(f"Features  -> Train: {X_feat_train.shape} | Test: {X_feat_test.shape}")
         print(f"Targets   -> Classes ({len(class_names)}): {class_names.tolist()}")

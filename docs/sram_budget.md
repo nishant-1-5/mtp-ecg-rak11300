@@ -25,13 +25,13 @@ logging, and stacks on both cores, and it keeps the design portable to smaller p
 | Buffer | Bytes | Status | Notes |
 |---|---:|---|---|
 | Acquisition ping-pong, 2 × 1000 × `int16_t` | 4,000 | design | One window is analysed while the next fills. |
-| `ecg::Lead1Workspace` | 5,184 | measured (`sizeof`, float build) | Breakdown in §3. |
-| `ecg::Lead1Features` output | 64 | measured | |
-| TFLM tensor arena | ~18,000 | estimate | README figure for the 3-lead model. Re-measure with `arena_used_bytes()` after the model is retrained (see §5). |
-| **Total** | **~27,250** | | Excludes stacks and the TFLM interpreter object. |
+| `ecg::Lead1Workspace` | 5,780 | measured (`sizeof`, float build) | Breakdown in §3. |
+| `ecg::Lead1Features` output | 76 | measured | |
+| TFLM tensor arena | ~18,000 | estimate | README figure for the 3-lead model; the Lead I input tensor is 3× smaller. Re-measure with `arena_used_bytes()` in Phase 2. |
+| **Total** | **~27,860** | | Excludes stacks and the TFLM interpreter object. |
 
-Flash (for reference): model `25,552 B` (actual length of `g_model` in `model_data.h`; the README's
-"~22 KB" is stale), cosine table `516 B`, code size TBD once the firmware links.
+Flash (for reference): Lead I model `25,184 B` (`g_model_len` in `models/lead1/model_data.h`; the 3-lead
+model was 25,552 B, the README's "~22 KB" is stale), cosine table `516 B`, code size TBD once the firmware links.
 
 ## 3. Decisions taken in the Phase 1 feature port
 
@@ -47,7 +47,10 @@ Flash (for reference): model `25,552 B` (actual length of `g_model` in `model_da
    - odd-extended copy of Lead I → forward IIR pass → backward IIR pass (filtfilt);
    - squared first difference, written over the same buffer (writes trail reads);
    - 8-tap moving sum, in place with a 4-value history;
-   - R-peak search and widths read it;
+   - R-peak search reads it;
+   - the window is filtered again (0.5–40 Hz filtfilt) into the same buffer for delineation; the
+     median beat goes to `templ[101]`, built one sample at a time through `scratch[32]`, so no
+     beats × samples matrix is ever stored (+596 B in total with `r_pos[32]`);
    - Welch: `buf[0..511]` becomes the 256-point complex FFT scratch and `buf[512..640]` the PSD accumulator.
 
    A straightforward port (separate float input copy, filtered, squared-derivative, integrated and

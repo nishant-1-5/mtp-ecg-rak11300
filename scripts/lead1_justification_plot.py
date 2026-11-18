@@ -3,7 +3,8 @@
 Fixed version of the original lead-1-just.py. The original took the first 8
 cache columns but labelled them with the names below, so e.g. its "Mean_QRS"
 box plot actually showed RR_Range (results/features/*_MISLABELED.png).
-Columns are now selected by name from project.FEATURE_NAMES.
+Columns are now selected by name from project.FEATURE_NAMES, from the v2
+Lead I table (PR/QRS/QT from scripts/delineation.py).
 """
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,14 +14,14 @@ import seaborn as sns
 from project import CACHE_FILE, FEATURE_NAMES, FEATURE_RESULTS_DIR
 
 cache = np.load(CACHE_FILE, allow_pickle=True)
-X_feat_train = cache["X_feat_train"]
+X_feat_train = cache["X_feat_v2_train"]  # 24 Lead I columns, names = FEATURE_NAMES[:24]
 y_train = cache["y_train"]
 class_names = cache["class_names"]  # ['CD', 'HYP', 'MI', 'NORM', 'STTC']
 
 # Strictly Lead I features (display name -> cache column name)
 lead_1_features = {
     "Mean_HR": "Mean_HR", "HR_Std": "HR_Std", "SDNN": "SDNN", "RMSSD": "RMSSD",
-    "Signal_Complexity": "Sample_Entropy", "Mean_PR": "Mean_PR",
+    "Hjorth_Complexity": "Sample_Entropy", "Mean_PR": "Mean_PR",
     "Mean_QRS": "Mean_QRS", "Mean_QTc": "Mean_QTc",
 }
 cols = [FEATURE_NAMES.index(c) for c in lead_1_features.values()]
@@ -41,7 +42,7 @@ sns.barplot(data=target_corr_melted, x="Absolute Correlation", y="index", hue="S
 axes[0].set_title("A. Lead I Feature Predictive Power by Disease Class", fontsize=14, fontweight="bold")
 axes[0].set_xlabel("Absolute Pearson Correlation Magnitude", fontsize=12)
 axes[0].set_ylabel("Lead I Extracted Features", fontsize=12)
-axes[0].legend(title="Ailment Superclass", loc="lower right")
+axes[0].legend(title="Ailment Superclass", loc="upper right")
 
 
 # --- PLOT 2: Mean_QRS by (mutually exclusive) primary class ---

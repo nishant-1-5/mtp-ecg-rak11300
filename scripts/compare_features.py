@@ -34,7 +34,7 @@ def main():
 
     cache = np.load(args.cache, allow_pickle=True)
     lead1 = cache[f"X_{args.split}"][:, :, 0]
-    cached_feats = cache[f"X_feat_{args.split}"]
+    cached_feats = cache[f"X_feat_v2_{args.split}"]
     if args.limit:
         lead1, cached_feats = lead1[: args.limit], cached_feats[: args.limit]
     n = len(lead1)
@@ -50,8 +50,8 @@ def main():
         counts.astype("<i2").tofile(f)
 
     subprocess.run([args.exe, bin_path, csv_path, str(1.0 / LSB_PER_MV)], check=True)
-    cpp = np.loadtxt(csv_path, delimiter=",", skiprows=1)
-    cpp_feats, cpp_peaks = cpp[:, :-1], cpp[:, -1].astype(int)
+    cpp = np.genfromtxt(csv_path, delimiter=",", skip_header=1)
+    cpp_feats, cpp_peaks = cpp[:, :-2], cpp[:, -2].astype(int)
 
     ref = np.empty((n, len(FEATURE_NAMES)))
     ref_peaks = np.empty(n, dtype=int)
@@ -59,20 +59,23 @@ def main():
         ref[i], ref_peaks[i] = extract_lead1_features(lead1[i])
 
     # The reference must reproduce what the models were trained on.
-    cache_err = np.abs(np.nan_to_num(ref) - cached_feats[:, CACHE_COLUMNS]).max(axis=0)
-    print(f"reference vs cached X_feat_{args.split}: max |diff| per feature")
+    cache_err = np.nanmax(np.abs(ref - cached_feats[:, CACHE_COLUMNS]), axis=0)
+    print(f"reference vs cached X_feat_v2_{args.split}: max |diff| per feature")
     print("  " + ", ".join(f"{k}={v:.2g}" for k, v in zip(FEATURE_NAMES, cache_err)))
 
     same_peaks = cpp_peaks == ref_peaks
     print(f"\n{n} windows; identical R-peak count in {same_peaks.mean() * 100:.2f}%")
-    print(f"{'feature':<18}{'max abs diff':>14}{'max rel diff':>14}{'within tol %':>14}")
+    print(f"{'feature':<18}{'max abs diff':>14}{'max rel diff':>14}{'within tol %':>14}{'NaN mismatch':>14}")
     worst = []
     for k, name in enumerate(FEATURE_NAMES):
-        d = np.abs(cpp_feats[:, k] - ref[:, k])
-        rel = d / np.maximum(np.abs(ref[:, k]), 1e-12)
-        ok = (d <= ABS_TOL) | (rel <= REL_TOL)
+        a, b = cpp_feats[:, k], ref[:, k]
+        both_nan = np.isnan(a) & np.isnan(b)
+        nan_mismatch = np.isnan(a) ^ np.isnan(b)
+        d = np.where(both_nan | nan_mismatch, 0.0, np.abs(a - b))
+        rel = d / np.maximum(np.abs(np.nan_to_num(b)), 1e-12)
+        ok = ~nan_mismatch & ((d <= ABS_TOL) | (rel <= REL_TOL))
         worst.append(np.where(~ok)[0])
-        print(f"{name:<18}{d.max():>14.3g}{rel.max():>14.3g}{ok.mean() * 100:>14.2f}")
+        print(f"{name:<18}{d.max():>14.3g}{rel.max():>14.3g}{ok.mean() * 100:>14.2f}{nan_mismatch.sum():>14d}")
     bad = np.unique(np.concatenate(worst))
     print(f"\nwindows with any feature out of tolerance: {len(bad)} / {n}")
     if len(bad):

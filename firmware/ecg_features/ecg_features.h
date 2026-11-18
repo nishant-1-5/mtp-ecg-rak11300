@@ -1,12 +1,13 @@
 // Lead I numerical feature extraction for the RAK11300 (RP2040, Cortex-M0+).
 //
-// C++ port of `extract_ecg_features_corrected()` in fix_cache.py, restricted to
-// the features that only need Lead I (the RA/LA/RL front end cannot record
-// Leads II/III). Python reference: scripts/reference_features.py.
+// C++ port of scripts/reference_features.py::extract_lead1_features (v2):
+// rhythm/HRV/Hjorth/Welch blocks from fix_cache.py, PR/QRS/QT/QTc from the
+// median-beat delineation in scripts/delineation.py. Lead I only, because the
+// RA/LA/RL front end cannot record Leads II/III.
 //
 // Design rules (see docs/sram_budget.md):
 //   * No heap, no exceptions, no STL containers. All scratch memory is a
-//     caller-owned `Lead1Workspace` (5,184 B with float) that can live in .bss.
+//     caller-owned `Lead1Workspace` (5,780 B with float) that can live in .bss.
 //   * Input is the raw int16 ADC window (2 B/sample) plus a mV-per-LSB scale,
 //     so the acquisition buffer never has to be widened to float.
 //   * Portable C++14: builds with the Pico SDK toolchain and with a host
@@ -36,10 +37,12 @@ constexpr int kMaxCandidates = (kIntegLen - 1) / 2 + 1;
 constexpr int kMaxPeaks = 32;
 constexpr int kWelchSeg = 256;     // scipy.signal.welch nperseg
 constexpr int kWelchStep = 128;    // nperseg - noverlap
+constexpr int kTemplatePre = 30;   // median beat: 300 ms before R ...
+constexpr int kTemplatePost = 70;  // ... to 700 ms after R
+constexpr int kTemplateLen = kTemplatePre + kTemplatePost + 1;
 
-// Feature vector. Field order follows columns 0-11, 13, 16, 17 of the Python
-// feature vector; Mean_PR/Mean_QT/Mean_QTc (12, 14, 15) are intentionally not
-// ported yet (see docs/phase1_feature_port.md).
+// Feature vector, same order as reference_features.FEATURE_NAMES and as
+// columns 0-17 of the X_feat_v2_* training table.
 struct Lead1Features {
   real_t mean_hr;            // bpm
   real_t min_hr;             // bpm
@@ -53,22 +56,30 @@ struct Lead1Features {
   real_t rmssd;              // ms
   real_t pnn50;              // %
   real_t hjorth_complexity;  // "Sample_Entropy" column in the Python code
-  real_t mean_qrs_ms;        // half-prominence width of the integrated peak
+  real_t pr_ms;              // P onset -> QRS onset; NaN if no P wave found
+  real_t qrs_ms;             // QRS onset -> offset; NaN if < 3 usable beats
+  real_t qt_ms;              // QRS onset -> T end (tangent method); NaN if not found
+  real_t qtc_ms;             // Bazett, using mean_rr
   real_t snr_db;             // Welch power outside vs inside < 0.5 Hz
   real_t baseline_wander;    // fraction of Welch power < 0.5 Hz
   uint8_t n_peaks;           // detected R peaks (0 => HRV values are defaults)
+  uint8_t n_beats;           // beats in the median template (< 3 => no intervals)
 };
 
-constexpr int kNumFeatures = 15;
+constexpr int kNumFeatures = 18;
 
 // Caller-owned scratch memory. Reused for every window; contents are
 // meaningless between calls. Keep one static instance.
 struct Lead1Workspace {
-  // filtfilt buffer -> squared derivative -> integrated signal -> FFT scratch.
+  // 5-15 Hz filtfilt -> squared derivative -> integrated signal ->
+  // 0.5-40 Hz filtfilt (delineation) -> FFT scratch + PSD accumulator.
   real_t buf[kWindowLen + 2 * kFiltPad];
   // Local-maximum positions; bits 14/15 hold the distance-filter state.
   uint16_t candidates[kMaxCandidates];
-  uint16_t peaks[kMaxPeaks];
+  uint16_t peaks[kMaxPeaks];   // Pan-Tompkins peaks (integrated-signal index)
+  uint16_t r_pos[kMaxPeaks];   // refined R positions used in the template
+  real_t templ[kTemplateLen];  // median beat
+  real_t scratch[kMaxPeaks];   // per-sample values across beats (median)
 };
 
 enum Status : int {

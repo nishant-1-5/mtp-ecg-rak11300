@@ -10,18 +10,29 @@ namespace {
 
 // ---------------------------------------------------------------------------
 // Constants generated with scipy 1.16:
-//   b, a = scipy.signal.butter(2, [5 / 50, 15 / 50], btype="bandpass")
+//   b, a = scipy.signal.butter(2, [lo / 50, hi / 50], btype="bandpass")
 //   zi   = scipy.signal.lfilter_zi(b, a)
 // ---------------------------------------------------------------------------
+struct Iir4 {
+  real_t b[5], a[5], zi[4];
+};
 #define ECG_R(v) static_cast<real_t>(v)  // intentional narrowing in float builds
-const real_t kB[5] = {ECG_R(0.06745527388907191), ECG_R(0.0),
-                      ECG_R(-0.13491054777814382), ECG_R(0.0),
-                      ECG_R(0.06745527388907191)};
-const real_t kA[5] = {ECG_R(1.0), ECG_R(-2.673578905120267),
-                      ECG_R(2.9923618041278957), ECG_R(-1.6745773146352607),
-                      ECG_R(0.41280159809618855)};
-const real_t kZi[4] = {ECG_R(-0.06745527388907088), ECG_R(-0.06745527388907364),
-                       ECG_R(0.06745527388907323), ECG_R(0.0674552738890715)};
+// 5-15 Hz: QRS energy for R-peak detection.
+const Iir4 kQrsBand = {
+    {ECG_R(0.06745527388907191), ECG_R(0.0), ECG_R(-0.13491054777814382), ECG_R(0.0),
+     ECG_R(0.06745527388907191)},
+    {ECG_R(1.0), ECG_R(-2.673578905120267), ECG_R(2.9923618041278957),
+     ECG_R(-1.6745773146352607), ECG_R(0.41280159809618855)},
+    {ECG_R(-0.06745527388907088), ECG_R(-0.06745527388907364), ECG_R(0.06745527388907323),
+     ECG_R(0.0674552738890715)}};
+// 0.5-40 Hz: diagnostic band for delineation (scripts/delineation.py).
+const Iir4 kWideBand = {
+    {ECG_R(0.6244476715487454), ECG_R(0.0), ECG_R(-1.2488953430974907), ECG_R(0.0),
+     ECG_R(0.6244476715487454)},
+    {ECG_R(1.0), ECG_R(-0.814719572580635), ECG_R(-0.8612244687554137),
+     ECG_R(0.28314207179462936), ECG_R(0.3952929600661774)},
+    {ECG_R(-0.6244476715488001), ECG_R(-0.6244476715487555), ECG_R(0.6244476715487824),
+     ECG_R(0.624447671548767)}};
 #undef ECG_R
 
 constexpr int kPeakDistance = 35;  // int(0.35 * fs)
@@ -76,20 +87,176 @@ inline real_t Sqrt(real_t v) { return std::sqrt(v); }
 
 // One lfilter() pass (direct form II transposed, the structure scipy uses),
 // in place, starting with state zi * first_sample. dir = +1 or -1.
-void FilterPass(real_t* x, int n, int dir) {
+void FilterPass(const Iir4& f, real_t* x, int n, int dir) {
   int i = dir > 0 ? 0 : n - 1;
   const real_t first = x[i];
-  real_t z0 = kZi[0] * first, z1 = kZi[1] * first;
-  real_t z2 = kZi[2] * first, z3 = kZi[3] * first;
+  real_t z0 = f.zi[0] * first, z1 = f.zi[1] * first;
+  real_t z2 = f.zi[2] * first, z3 = f.zi[3] * first;
   for (int k = 0; k < n; ++k, i += dir) {
     const real_t xi = x[i];
-    const real_t y = kB[0] * xi + z0;
-    z0 = kB[1] * xi - kA[1] * y + z1;
-    z1 = kB[2] * xi - kA[2] * y + z2;
-    z2 = kB[3] * xi - kA[3] * y + z3;
-    z3 = kB[4] * xi - kA[4] * y;
+    const real_t y = f.b[0] * xi + z0;
+    z0 = f.b[1] * xi - f.a[1] * y + z1;
+    z1 = f.b[2] * xi - f.a[2] * y + z2;
+    z2 = f.b[3] * xi - f.a[3] * y + z3;
+    z3 = f.b[4] * xi - f.a[4] * y;
     x[i] = y;
   }
+}
+
+// scipy.signal.filtfilt(b, a, adc * scale) with padtype='odd', padlen=15.
+// Writes n + 2*kFiltPad values to buf; the filtered signal is buf[kFiltPad..].
+void FiltFilt(const Iir4& f, const int16_t* adc, int n, real_t scale, real_t* buf) {
+  const real_t x0 = adc[0] * scale;
+  const real_t xl = adc[n - 1] * scale;
+  for (int k = 0; k < kFiltPad; ++k) {
+    buf[k] = 2 * x0 - adc[kFiltPad - k] * scale;
+    buf[kFiltPad + n + k] = 2 * xl - adc[n - 2 - k] * scale;
+  }
+  for (int i = 0; i < n; ++i) buf[kFiltPad + i] = adc[i] * scale;
+  const int ext_len = n + 2 * kFiltPad;
+  FilterPass(f, buf, ext_len, +1);
+  FilterPass(f, buf, ext_len, -1);
+}
+
+// ---------------------------------------------------------------------------
+// Delineation, mirroring scripts/delineation.py (DEFAULT_PARAMS).
+// ---------------------------------------------------------------------------
+constexpr int kRSearch = 8;       // +-80 ms R refinement
+constexpr int kQrsHalfSpan = 12;  // QRS edges within +-120 ms of R
+constexpr real_t kKOn = real_t(0.08);
+constexpr real_t kKOff = real_t(0.05);
+constexpr int kQrsGap = 2;
+constexpr int kTMinGap = 5;
+constexpr real_t kTRrFrac = real_t(0.5);
+constexpr int kPFar = 25;
+constexpr int kPNear = 4;
+constexpr real_t kPFrac = real_t(0.5);
+constexpr real_t kPMinMv = real_t(0.03);
+constexpr int kMinBeats = 3;
+constexpr real_t kMsPerSample = real_t(1000) / kFs;
+
+inline real_t Abs(real_t v) { return v < 0 ? -v : v; }
+
+// |central difference| / 2 of the template; 0 at the ends (as in Python).
+inline real_t Slope(const real_t* t, int i) {
+  return (i <= 0 || i >= kTemplateLen - 1) ? real_t(0) : Abs(t[i + 1] - t[i - 1]) / 2;
+}
+
+// delineation._crossing on the slope or |t - iso| sequence, clamped to [lo, hi].
+inline real_t Crossing(real_t a_lo, real_t a_hi, int i_lo, int i_hi, real_t level) {
+  const real_t d = a_hi - a_lo;
+  real_t frac = d != 0 ? (level - a_lo) / d : real_t(0);
+  if (frac < 0) frac = 0;
+  if (frac > 1) frac = 1;
+  return static_cast<real_t>(i_lo) + frac * static_cast<real_t>(i_hi - i_lo);
+}
+
+// delineation._walk
+int Walk(const real_t* t, int start, int limit, int step, real_t th) {
+  int last = start, below = 0, j = start;
+  while (j != limit) {
+    j += step;
+    if (Slope(t, j) >= th) {
+      last = j;
+      below = 0;
+    } else if (++below >= kQrsGap) {
+      break;
+    }
+  }
+  return last;
+}
+
+// Median of v[0..n-1] (sorts v in place; n <= kMaxPeaks). np.median semantics.
+real_t Median(real_t* v, int n) {
+  for (int i = 1; i < n; ++i) {
+    const real_t key = v[i];
+    int j = i - 1;
+    while (j >= 0 && v[j] > key) { v[j + 1] = v[j]; --j; }
+    v[j + 1] = key;
+  }
+  return (n & 1) ? v[n / 2] : (v[n / 2 - 1] + v[n / 2]) / 2;
+}
+
+// delineation.delineate_template. Returns false if the template is flat.
+// Outputs NaN for fiducials that are not found.
+bool DelineateTemplate(const real_t* t, real_t rr_ms, real_t* qrs_on_out,
+                       real_t* qrs_off_out, real_t* t_end_out, real_t* p_on_out) {
+  constexpr int r = kTemplatePre;
+  constexpr int m = kTemplateLen;
+  const int lo = r - kQrsHalfSpan, hi = r + kQrsHalfSpan;
+
+  int left_max = lo, right_max = r;
+  for (int i = lo; i <= r; ++i)
+    if (Slope(t, i) > Slope(t, left_max)) left_max = i;
+  for (int i = r; i <= hi; ++i)
+    if (Slope(t, i) > Slope(t, right_max)) right_max = i;
+  const real_t s_left = Slope(t, left_max), s_right = Slope(t, right_max);
+  const real_t s_max = s_left > s_right ? s_left : s_right;
+  if (!(s_max > 0)) return false;
+
+  const real_t th_on = kKOn * s_max;
+  int j = Walk(t, left_max, lo, -1, th_on);
+  const real_t qrs_on =
+      j > 0 ? Crossing(Slope(t, j - 1), Slope(t, j), j - 1, j, th_on) : static_cast<real_t>(j);
+  const real_t th_off = kKOff * s_max;
+  j = Walk(t, right_max, hi, +1, th_off);
+  const real_t qrs_off =
+      j + 1 < m ? Crossing(Slope(t, j), Slope(t, j + 1), j, j + 1, th_off) : static_cast<real_t>(j);
+
+  // PR-segment level: mean of t[max(0, i_on-3) : max(1, i_on)].
+  const int i_on = static_cast<int>(std::floor(qrs_on));
+  const int iso_a = i_on - 3 > 0 ? i_on - 3 : 0;
+  const int iso_b = i_on > 1 ? i_on : 1;
+  real_t iso = 0;
+  for (int i = iso_a; i < iso_b; ++i) iso += t[i];
+  iso /= static_cast<real_t>(iso_b - iso_a);
+
+  // T wave: peak deviation from iso, then tangent at the steepest return.
+  real_t t_end = NAN;
+  const int t_lo = static_cast<int>(std::ceil(qrs_off)) + kTMinGap;
+  int t_hi = r + static_cast<int>(std::nearbyint(kTRrFrac * rr_ms / kMsPerSample));
+  if (t_hi > m - 2) t_hi = m - 2;
+  if (t_hi > t_lo + 2) {
+    int tp = t_lo;
+    for (int i = t_lo; i <= t_hi; ++i)
+      if (Abs(t[i] - iso) > Abs(t[tp] - iso)) tp = i;
+    const real_t sign = (t[tp] - iso) > 0 ? real_t(1) : real_t(-1);
+    real_t best = 0;
+    int best_k = -1;
+    const int k_end = tp + 25 < m - 1 ? tp + 25 : m - 1;
+    for (int k = tp; k < k_end; ++k) {
+      const real_t s = -sign * (t[k + 1] - t[k - 1]) / 2;
+      if (s > best) { best = s; best_k = k; }
+    }
+    if (best_k >= 0 && best > 0) {
+      t_end = static_cast<real_t>(best_k) + (t[best_k] - iso) * sign / best;
+      if (t_end < tp) t_end = static_cast<real_t>(tp);
+      if (t_end > m - 1) t_end = static_cast<real_t>(m - 1);
+    }
+  }
+
+  // P wave: peak deviation 40-250 ms before QRS onset, onset at half amplitude.
+  real_t p_on = NAN;
+  const int p_lo = i_on - kPFar > 1 ? i_on - kPFar : 1;
+  const int p_hi = i_on - kPNear;
+  if (p_hi > p_lo) {
+    int pp = p_lo;
+    for (int i = p_lo; i <= p_hi; ++i)
+      if (Abs(t[i] - iso) > Abs(t[pp] - iso)) pp = i;
+    const real_t p_amp = Abs(t[pp] - iso);
+    if (p_amp >= kPMinMv) {
+      const real_t level = kPFrac * p_amp;
+      int k = pp;
+      while (k > p_lo && Abs(t[k] - iso) >= level) --k;
+      p_on = Crossing(Abs(t[k] - iso), Abs(t[k + 1] - iso), k, k + 1, level);
+    }
+  }
+
+  *qrs_on_out = qrs_on;
+  *qrs_off_out = qrs_off;
+  *t_end_out = t_end;
+  *p_on_out = p_on;
+  return true;
 }
 
 // In-place radix-2 complex FFT, N = 256, interleaved re/im.
@@ -146,16 +313,7 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
   // ---- 1. Band-pass -------------------------------------------------------
   // b, a = butter(2, [5/(fs/2), 15/(fs/2)], 'bandpass')
   // filtered = filtfilt(b, a, lead1)        # padtype='odd', padlen=15
-  const real_t x0 = adc[0] * mv_per_lsb;
-  const real_t xl = adc[n - 1] * mv_per_lsb;
-  for (int k = 0; k < kFiltPad; ++k) {
-    buf[k] = 2 * x0 - adc[kFiltPad - k] * mv_per_lsb;
-    buf[kFiltPad + n + k] = 2 * xl - adc[n - 2 - k] * mv_per_lsb;
-  }
-  for (int i = 0; i < n; ++i) buf[kFiltPad + i] = adc[i] * mv_per_lsb;
-  const int ext_len = n + 2 * kFiltPad;
-  FilterPass(buf, ext_len, +1);
-  FilterPass(buf, ext_len, -1);
+  FiltFilt(kQrsBand, adc, n, mv_per_lsb, buf);
 
   // ---- 2. Squared derivative + moving-window integration ------------------
   // integrated = np.convolve(np.diff(filtered)**2, np.ones(8), mode='same')
@@ -225,40 +383,26 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
       cand[k] |= kRemoved;
   }
 
-  // 3c. Prominence rule, then 3d. half-prominence width for survivors
-  // (scipy _peak_prominences with wlen=None, then _peak_widths(rel_height=.5)).
+  // 3c. Prominence rule (scipy _peak_prominences with wlen=None).
   uint16_t* const peaks = ws->peaks;
   int n_peaks = 0;
-  real_t width_sum = 0;
   for (int j = 0; j < n_cand && n_peaks < kMaxPeaks; ++j) {
     if (cand[j] & kRemoved) continue;
     const int p = cand[j] & kPosMask;
     const real_t xp = x[p];
-    int i = p, left_base = p, right_base = p;
+    int i = p;
     real_t left_min = xp, right_min = xp;
     while (i >= 0 && x[i] <= xp) {
-      if (x[i] < left_min) { left_min = x[i]; left_base = i; }
+      if (x[i] < left_min) left_min = x[i];
       --i;
     }
     i = p;
     while (i <= m - 1 && x[i] <= xp) {
-      if (x[i] < right_min) { right_min = x[i]; right_base = i; }
+      if (x[i] < right_min) right_min = x[i];
       ++i;
     }
     const real_t prominence = xp - (left_min > right_min ? left_min : right_min);
     if (!(prominence >= min_prominence)) continue;
-
-    const real_t height = xp - prominence * real_t(0.5);
-    i = p;
-    while (left_base < i && height < x[i]) --i;
-    real_t left_ip = static_cast<real_t>(i);
-    if (x[i] < height) left_ip += (height - x[i]) / (x[i + 1] - x[i]);
-    i = p;
-    while (i < right_base && height < x[i]) ++i;
-    real_t right_ip = static_cast<real_t>(i);
-    if (x[i] < height) right_ip -= (height - x[i]) / (x[i - 1] - x[i]);
-
-    width_sum += right_ip - left_ip;
     peaks[n_peaks++] = static_cast<uint16_t>(p);
   }
   out->n_peaks = static_cast<uint8_t>(n_peaks);
@@ -317,10 +461,48 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
     out->pnn50 = 0;
   }
 
-  // ---- 5. QRS width -------------------------------------------------------
-  // mean_qrs = mean(peak_widths(integrated, peaks, 0.5)[0]) / fs * 1000
-  out->mean_qrs_ms =
-      n_peaks > 0 ? width_sum / n_peaks * (real_t(1000) / kFs) : real_t(90);
+  // ---- 5. PR / QRS / QT / QTc from a median beat --------------------------
+  // pr, qrs, qt, qtc, _ = delineation.lead1_intervals(lead1, peaks, mean_rr)
+  // The integrated signal is no longer needed: buf now holds the 0.5-40 Hz
+  // band-passed window.
+  out->pr_ms = out->qrs_ms = out->qt_ms = out->qtc_ms = NAN;
+  {
+    FiltFilt(kWideBand, adc, n, mv_per_lsb, buf);
+    const real_t* const xb = buf + kFiltPad;  // length n
+    real_t ref = 0;
+    for (int i = 0; i < n; ++i) ref += xb[i];
+    ref /= static_cast<real_t>(n);
+
+    // R refinement: max |xb - ref| within +-80 ms of each detected peak.
+    uint16_t* const r_pos = ws->r_pos;
+    int n_beats = 0;
+    for (int k = 0; k < n_peaks; ++k) {
+      const int p = peaks[k];
+      const int lo = p - kRSearch > 0 ? p - kRSearch : 0;
+      const int hi = p + kRSearch < n - 1 ? p + kRSearch : n - 1;
+      int best = lo;
+      for (int i = lo; i <= hi; ++i)
+        if (Abs(xb[i] - ref) > Abs(xb[best] - ref)) best = i;
+      if (best - kTemplatePre >= 0 && best + kTemplatePost < n)
+        r_pos[n_beats++] = static_cast<uint16_t>(best);
+    }
+
+    if (n_beats >= kMinBeats) {
+      real_t* const tmpl = ws->templ;
+      for (int i = 0; i < kTemplateLen; ++i) {
+        for (int k = 0; k < n_beats; ++k) ws->scratch[k] = xb[r_pos[k] - kTemplatePre + i];
+        tmpl[i] = Median(ws->scratch, n_beats);
+      }
+      real_t qrs_on, qrs_off, t_end, p_on;
+      if (DelineateTemplate(tmpl, mean_rr, &qrs_on, &qrs_off, &t_end, &p_on)) {
+        out->qrs_ms = (qrs_off - qrs_on) * kMsPerSample;
+        out->pr_ms = (qrs_on - p_on) * kMsPerSample;  // NaN if no P wave
+        out->qt_ms = (t_end - qrs_on) * kMsPerSample;  // NaN if no T end
+        if (mean_rr > 0) out->qtc_ms = out->qt_ms / Sqrt(mean_rr / real_t(1000));
+      }
+    }
+    out->n_beats = static_cast<uint8_t>(n_beats);
+  }
 
   // ---- 6. Hjorth complexity on raw Lead I ---------------------------------
   // Scale-invariant, so computed exactly on integer ADC counts.
@@ -393,8 +575,8 @@ void FeaturesToArray(const Lead1Features& f, real_t* dst) {
   const real_t v[kNumFeatures] = {
       f.mean_hr, f.min_hr, f.max_hr, f.hr_std, f.mean_rr,
       f.rr_std,  f.rr_range, f.rr_cv, f.sdnn, f.rmssd,
-      f.pnn50,   f.hjorth_complexity, f.mean_qrs_ms, f.snr_db,
-      f.baseline_wander};
+      f.pnn50,   f.hjorth_complexity, f.pr_ms, f.qrs_ms, f.qt_ms, f.qtc_ms,
+      f.snr_db,  f.baseline_wander};
   for (int i = 0; i < kNumFeatures; ++i) dst[i] = v[i];
 }
 

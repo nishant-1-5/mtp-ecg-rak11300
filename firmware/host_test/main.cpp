@@ -32,8 +32,9 @@ int main(int argc, char** argv) {
   if (!out) { perror(argv[2]); return 1; }
   fprintf(out,
           "mean_hr,min_hr,max_hr,hr_std,mean_rr,rr_std,rr_range,rr_cv,sdnn,"
-          "rmssd,pnn50,hjorth_complexity,mean_qrs_ms,snr_db,baseline_wander,"
-          "n_peaks\n");
+          "rmssd,pnn50,hjorth_complexity,pr_ms,qrs_ms,qt_ms,qtc_ms,snr_db,"
+          "baseline_wander,"
+          "n_peaks,n_beats\n");
 
   clock_t cpu = 0;
   for (int r = 0; r < hdr[0]; ++r) {
@@ -50,8 +51,11 @@ int main(int argc, char** argv) {
     if (rc != ecg::kOk) { fprintf(stderr, "record %d: rc=%d\n", r, rc); return 1; }
     ecg::real_t v[ecg::kNumFeatures];
     ecg::FeaturesToArray(f, v);
-    for (int i = 0; i < ecg::kNumFeatures; ++i) fprintf(out, "%.9g,", (double)v[i]);
-    fprintf(out, "%d\n", f.n_peaks);
+    for (int i = 0; i < ecg::kNumFeatures; ++i) {
+      if (v[i] != v[i]) fputs("nan,", out);  // msvcrt would print 1.#QNAN
+      else fprintf(out, "%.9g,", (double)v[i]);
+    }
+    fprintf(out, "%d,%d\n", f.n_peaks, f.n_beats);
   }
   fclose(out);
   fclose(in);
