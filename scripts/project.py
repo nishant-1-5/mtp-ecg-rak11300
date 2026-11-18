@@ -40,6 +40,28 @@ FEATURE_NAMES = [
 # Lead I only: the 18 rhythm/morphology/quality features + Lead I statistics.
 FEATURE_COLUMNS = {"lead1": list(range(24)), "3lead": list(range(36))}[LEAD_SET]
 
+# Input convention of the 1D-CNN (notebooks 11 and 20, and the firmware).
+#   none   - raw mV (the original 3-lead model)
+#   zscore - per window and channel: (x - mean) / (std + 1e-3 mV)
+# With raw mV, INT8 calibration has to cover rare +-7 mV windows and the INT8
+# Lead I model lost ~0.05 macro AUC; with zscore the loss is ~0.004.
+# See docs/lead1_retrain.md.
+CNN_INPUT_NORMS = {"lead1": "zscore", "3lead": "none"}
+CNN_INPUT_NORM = CNN_INPUT_NORMS[LEAD_SET]
+ZSCORE_EPS_MV = 1e-3
+
+
+def normalize_cnn_input(X, mode=None):
+    """Applies the CNN input convention to signals shaped (N, samples, channels).
+
+    mode defaults to CNN_INPUT_NORM of the active lead set.
+    """
+    mode = CNN_INPUT_NORM if mode is None else mode
+    if mode == "none":
+        return X
+    Xc = X - X.mean(axis=1, keepdims=True)
+    return (Xc / (Xc.std(axis=1, keepdims=True) + ZSCORE_EPS_MV)).astype(np.float32)
+
 
 def load_cache(verbose=True):
     """Loads the cache and keeps only the leads/features of the active lead set.
