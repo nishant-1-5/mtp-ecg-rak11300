@@ -5,6 +5,10 @@ dataset/
 data/cache/
 ptbxl_preprocessed_cache.npz
 build/
+firmware/*/build/
+
+# Portable ARM toolchain / Pico SDK (see firmware/rak11300_bench/README.md)
+.toolchain/
 
 # Python / Jupyter
 __pycache__/

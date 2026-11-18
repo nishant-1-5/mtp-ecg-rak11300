@@ -77,14 +77,28 @@ model was 25,552 B, the README's "~22 KB" is stale), cosine table `516 B`, code 
 | Option | Saves | Cost |
 |---|---:|---|
 | Single 1000-sample ring buffer + small ISR FIFO instead of ping-pong (core 1 does acquisition) | ~2,000 B | Analysis must finish, or copy out, before the oldest samples are overwritten. |
-| Overlay `Lead1Workspace` with the non-persistent part of the tensor arena (features and CNN never run at the same time) | up to 5,184 B | Depends on TFLM's arena layout; fragile across TFLM versions. |
-| Quantise CNN input straight from the `int16_t` window into the arena's `int8` input tensor | avoids a 12 KB float copy (3 leads) or 4 KB (1 lead) | None; this is the plan, not an option. |
+| Overlay `Lead1Workspace` with the non-persistent part of the tensor arena (features and CNN never run at the same time) | up to 5,780 B | Depends on TFLM's arena layout; fragile across TFLM versions. |
+| Quantise CNN input straight from the `int16_t` window into the arena's `int8` input tensor | avoids a 4 KB float copy (Lead I) | None. Implemented: `ecg::PrepareCnnInput` writes into a caller-supplied buffer. |
 
-## 5. Open items
+## 5. Measurements and open items
 
-- Re-measure arena size, peak stack, and latency on the RAK11300 once TFLM is integrated (Phase 2).
-- The current CNN takes 3 leads (I, II, III); the RA/LA/RL front end provides Lead I only. A
-  retrained single-lead model will have a different arena size (`docs/phase1_feature_port.md`, §5).
-- Feature-extraction latency on the M0+ is **not measured**. A rough count (~150k float operations
-  per window, tens of cycles each in the ROM float library) suggests tens of milliseconds per 10 s
+Measured with the Arm GNU Toolchain 15.3 build of `firmware/rak11300_bench` (`-O3`, Release):
+
+| Item | Value |
+|---|---:|
+| Feature extraction + delineation code (`ecg_features.cpp`) | 12,768 B flash |
+| Gate / flags / CNN input prep (`ecg_pipeline.cpp`) | 1,376 B flash |
+| Lead I INT8 model (`g_model_len`) | 25,184 B flash |
+| **ECG code + model** | **39,328 B flash** (< 50 KB target; the TFLM runtime comes on top, Phase 2) |
+| `Lead1Workspace` | 5,780 B .bss |
+| Double-precision arithmetic in the ECG code | none (`nm -u` lists only `__aeabi_f*`) |
+
+Open:
+
+- **Latency on the board:** flash `rak11300_bench.uf2` and read the per-stage times over USB serial
+  (`firmware/rak11300_bench/README.md`). A rough operation count (~200k float operations per
+  window, tens of cycles each in the ROM float routines) suggests tens of milliseconds per 10 s
   window. Measure before optimising.
+- **Arena size, peak stack and CNN latency:** Phase 2, with `arena_used_bytes()` and a painted stack.
+- **XIP:** code runs from flash through a 16 KB cache. If the board numbers are worse than expected,
+  move the hot loops (`FilterPass`, `Fft256`) to RAM with `__not_in_flash_func`.

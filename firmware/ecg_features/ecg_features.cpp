@@ -5,6 +5,15 @@
 
 #include <cmath>
 
+// Optional per-stage timing. The firmware benchmark defines ECG_PROFILE and
+// provides EcgProfileMark(); host builds compile the marks away.
+#ifdef ECG_PROFILE
+extern "C" void EcgProfileMark(int stage);
+#define ECG_PROFILE_MARK(stage) EcgProfileMark(stage)
+#else
+#define ECG_PROFILE_MARK(stage) ((void)0)
+#endif
+
 namespace ecg {
 namespace {
 
@@ -309,7 +318,7 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
     return kBadArgs;
   }
   real_t* const buf = ws->buf;
-
+  ECG_PROFILE_MARK(0);  // start
   // ---- 1. Band-pass -------------------------------------------------------
   // b, a = butter(2, [5/(fs/2), 15/(fs/2)], 'bandpass')
   // filtered = filtfilt(b, a, lead1)        # padtype='odd', padlen=15
@@ -406,6 +415,7 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
     peaks[n_peaks++] = static_cast<uint16_t>(p);
   }
   out->n_peaks = static_cast<uint8_t>(n_peaks);
+  ECG_PROFILE_MARK(1);  // filtering + R-peak detection done
 
   // ---- 4. HRV -------------------------------------------------------------
   // rr = diff(peaks) / fs * 1000 if len(peaks) >= 2 else [800.0]
@@ -461,6 +471,7 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
     out->pnn50 = 0;
   }
 
+  ECG_PROFILE_MARK(2);  // HRV done
   // ---- 5. PR / QRS / QT / QTc from a median beat --------------------------
   // pr, qrs, qt, qtc, _ = delineation.lead1_intervals(lead1, peaks, mean_rr)
   // The integrated signal is no longer needed: buf now holds the 0.5-40 Hz
@@ -528,6 +539,7 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
     out->n_beats = static_cast<uint8_t>(n_beats);
   }
 
+  ECG_PROFILE_MARK(3);  // delineation + template correlation done
   // ---- 6. Hjorth complexity on raw Lead I ---------------------------------
   // Scale-invariant, so computed exactly on integer ADC counts.
   {
@@ -553,6 +565,7 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
                                  : real_t(0);
   }
 
+  ECG_PROFILE_MARK(4);  // Hjorth done
   // ---- 7. Signal quality from Welch PSD -----------------------------------
   // freqs, psd = welch(lead1, fs=100, nperseg=256)   # hann, 50% overlap,
   // bw = sum(psd[freqs < 0.5]); total = sum(psd) + 1e-8      # constant detrend
@@ -592,6 +605,7 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
     out->snr_db = real_t(10) * std::log10((total - bw) / (bw + real_t(1e-8)));
     out->baseline_wander = bw / total;
   }
+  ECG_PROFILE_MARK(5);  // Welch done
   return kOk;
 }
 

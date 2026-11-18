@@ -28,6 +28,7 @@ firmware/
   ecg_features/     Lead I feature extraction + delineation (C++14, no heap)
   ecg_pipeline/     quality gate, rhythm flags, CNN input prep, decisions
   host_test/        host harnesses for the parity tests
+  rak11300_bench/   Pico SDK benchmark firmware (build.ps1 -> .uf2)
 docs/               design notes and results (start with the list below)
 ```
 
@@ -74,11 +75,14 @@ trains. The 3-lead baseline notebooks, with their original outputs, are at git t
   97.4 % of clean windows and rejects 83 % at −6 dB electrode-motion noise. Rhythm flags reach
   0.94 sensitivity for TACHY and 0.91 for IRREGULAR (vs AF). Class decisions reach macro F1 0.605.
   The C++ matches Python on all 3,778 test windows.
+- **RP2040 build** (`firmware/rak11300_bench`). It builds with the Pico SDK 2.2.0 and a portable
+  Arm GCC 15.3 kept in `.toolchain/`. ECG code plus model is 39,328 B of flash with no double
+  arithmetic. The benchmark checks its own results against Python on the board.
 
 ### Next
 
-**Phase 1:** port into a Pico SDK project for the RAK11300 and measure per-stage latency on the
-board.
+**Phase 1:** flash `rak11300_bench.uf2` and record per-stage latency on the RAK11300. The board
+step needs the hardware; see `firmware/rak11300_bench/README.md`.
 
 **Phase 2: on-device TFLM**
 - Run `models/lead1/model_data.h` under TensorFlow Lite Micro, with the TFLM interpreter as the
