@@ -95,6 +95,19 @@ step needs the hardware; see `firmware/rak11300_bench/README.md`.
 
 **Phase 4:** update the slides with on-device numbers and write the MTP report.
 
+## Data sources and attribution
+
+The datasets are not redistributed here, except small derived excerpts: PTB-XL windows in
+`firmware/rak11300_bench/bench_vectors.h`, plus per-record features and predictions in `results/`.
+
+- **PTB-XL v1.0.3:** Wagner et al., *Scientific Data* 7, 154 (2020); PhysioNet, CC BY 4.0.
+  https://physionet.org/content/ptb-xl/1.0.3/
+- **PTB-XL+ v1.0.1** (GE 12SL interval features): Strodthoff et al., *Scientific Data* 10, 279
+  (2023); PhysioNet, CC BY 4.0. https://physionet.org/content/ptb-xl-plus/1.0.1/
+- **MIT-BIH Noise Stress Test Database:** Moody, Muldrow, Mark, *Computers in Cardiology* 11:381
+  (1984); PhysioNet, ODC-By 1.0. https://physionet.org/content/nstdb/1.0.0/
+- **PhysioNet:** Goldberger et al., *Circulation* 101(23):e215 (2000).
+
 ## Corrections to earlier claims
 
 The mid-term slides and the previous README contain numbers that no longer hold. Details are in
