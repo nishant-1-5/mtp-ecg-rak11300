@@ -42,7 +42,8 @@ docs/               design notes and results (start with the list below)
 | `docs/phase1_feature_port.md` | C++ feature port and parity results |
 | `docs/orchestrator.md` | On-device decision logic, gate, flags, noise stress test |
 | `docs/phase2_tflm.md` | TFLM on the RP2040 (emulated): correctness, arena, stack, latency, flash |
-| `docs/presentation/` | Mid-term slides |
+| `docs/presentation/` | Mid-term slides and the final deck |
+| `docs/report/` | MTP report (Markdown, Word, PDF) |
 
 ## Setup
 
@@ -93,7 +94,14 @@ trains. The 3-lead baseline notebooks, with their original outputs, are at git t
 
 **Phase 3 (needs the lab front end):** record live ECG, set `AdcInfo`, re-check gate thresholds.
 
-**Phase 4:** MTP report and updated slides (`docs/report/`).
+### Report and slides (Phase 4)
+
+| File | Contents |
+|---|---|
+| `docs/report/mtp_report.md` | MTP report (source; renders on GitHub) |
+| `docs/report/mtp_report.docx`, `.pdf` | Same report for submission (`python scripts/build_report.py`) |
+| `docs/presentation/final_presentation.pptx` | 14-slide final deck in the mid-term template (`python scripts/build_slides.py`) |
+| `docs/report/figures/` | Figures generated from the results files (`python scripts/make_report_figures.py`) |
 
 ## Data sources and attribution
 
