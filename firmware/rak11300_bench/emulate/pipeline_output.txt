@@ -1,0 +1,29 @@
+=== RAK11300 Lead I pipeline + TFLM ===
+clk_sys = 125000000 Hz
+TFLM arena: 20788 B used of 21504 B; input scale 0.0541500450, zero point -25
+activation head 16000 B; Lead1Workspace (5780 B) overlaid on the arena head
+[0] NORM, regular: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.086 HYP 0.012 MI 0.066 NORM 0.859 STTC 0.043, max |diff| vs TFLite 0.0000
+  CNN invoke 175.22 ms, whole pipeline 297.42 ms, peak stack 1636 B
+[1] CD, wide QRS: MATCH
+  quality 0x00 flags 0x10 cnn ran classes 0x05 (expected 0x05)
+  probs CD 0.941 HYP 0.230 MI 0.500 NORM 0.008 STTC 0.230, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 297.22 ms, peak stack 1636 B
+[2] MI: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.125 HYP 0.012 MI 0.051 NORM 0.859 STTC 0.012, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 294.24 ms, peak stack 1636 B
+[3] irregular, no P wave: MATCH
+  quality 0x00 flags 0x0c cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.238 HYP 0.070 MI 0.137 NORM 0.230 STTC 0.473, max |diff| vs TFLite 0.0000
+  CNN invoke 175.31 ms, whole pipeline 300.07 ms, peak stack 1636 B
+[4] tachycardic: MATCH
+  quality 0x00 flags 0x21 cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.250 HYP 0.336 MI 0.500 NORM 0.004 STTC 0.770, max |diff| vs TFLite 0.0000
+  CNN invoke 175.23 ms, whole pipeline 308.08 ms, peak stack 1636 B
+[5] NORM + electrode motion -6 dB: MATCH
+  quality 0x10 flags 0x15 cnn skipped classes 0x00 (expected 0x00)
+  whole pipeline 118.00 ms, peak stack 576 B
+peak core-0 stack over all windows: 1636 B
+=== PASS: 6 of 6 windows match the Python reference ===

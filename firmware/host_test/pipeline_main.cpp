@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     fprintf(out, "%d,%d,%d", res.quality, res.rhythm_flags, res.cnn_ran ? 1 : 0);
     for (int k = 0; k < ecg::kNumClasses; ++k) fprintf(out, ",%.7g", static_cast<double>(res.probs[k]));
     const double tc = static_cast<double>(res.features.template_corr);
-    if (tc != tc) fprintf(out, ",%d,nan\n", res.classes);
+    if (ecg::IsNan(res.features.template_corr)) fprintf(out, ",%d,nan\n", res.classes);
     else fprintf(out, ",%d,%.7g\n", res.classes, tc);
   }
   fclose(in);

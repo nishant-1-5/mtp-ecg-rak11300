@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     ecg::real_t v[ecg::kNumFeatures];
     ecg::FeaturesToArray(f, v);
     for (int i = 0; i < ecg::kNumFeatures; ++i) {
-      if (v[i] != v[i]) fputs("nan,", out);  // msvcrt would print 1.#QNAN
+      if (ecg::IsNan(v[i])) fputs("nan,", out);  // msvcrt would print 1.#QNAN
       else fprintf(out, "%.9g,", (double)v[i]);
     }
     fprintf(out, "%d,%d\n", f.n_peaks, f.n_beats);

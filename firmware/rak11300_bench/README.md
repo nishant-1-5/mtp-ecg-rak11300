@@ -1,4 +1,31 @@
-# RAK11300 benchmark firmware
+# RAK11300 firmware (benchmark, full pipeline, emulator)
+
+| Target | Contents |
+|---|---|
+| `rak11300_bench.uf2` | Feature extraction only, timing for each stage |
+| `rak11300_pipeline.uf2` | Full pipeline: features, gate, flags, INT8 CNN under TFLM, decisions. Reports arena use, peak stack and latency. |
+| `rak11300_validation.uf2` | The same as `rak11300_pipeline`, on 100 random fold-10 windows. Built only if `build/bench_vectors_validation.h` exists. |
+
+Every target checks its own results against the Python reference baked into the header and ends
+with `=== PASS` or `=== FAIL`. Results without a board are in `docs/phase2_tflm.md`.
+
+## Run without a board (rp2040js emulator)
+
+```powershell
+git clone --depth 1 https://github.com/wokwi/rp2040js.git .toolchain/rp2040js
+cd .toolchain/rp2040js; npm install; cd ../..
+.toolchain/rp2040js/node_modules/.bin/tsx --tsconfig .toolchain/rp2040js/tsconfig.json `
+    firmware/rak11300_bench/emulate/run.ts firmware/rak11300_bench/build/rak11300_pipeline.uf2 1500
+```
+
+The emulator runs at about a third of real time on this PC (≈1 min for the 6-window pipeline run).
+
+---
+
+The rest of this file covers the feature-stage benchmark. The pipeline targets build the same way
+and also need `.toolchain/pico-tflmicro` (raspberrypi/pico-tflmicro, `main`).
+
+# Feature-stage benchmark
 
 This firmware runs the Lead I pipeline (`firmware/ecg_features`, `firmware/ecg_pipeline`) on the
 RP2040, on 6 embedded PTB-XL windows (`bench_vectors.h`). For each window it:

@@ -10,6 +10,7 @@
 // Output goes to USB CDC and UART0 (115200 8N1). Open a serial terminal after flashing.
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "hardware/clocks.h"
 #include "pico/stdlib.h"
@@ -30,7 +31,7 @@ ecg::Lead1Workspace g_ws;      // 5,780 B in .bss
 int8_t g_cnn_input[ecg::kWindowLen];
 
 bool Close(float got, float want) {
-  if (isnan(want) || isnan(got)) return isnan(want) && isnan(got);
+  if (ecg::IsNan(want) || ecg::IsNan(got)) return ecg::IsNan(want) && ecg::IsNan(got);
   const float d = fabsf(got - want);
   return d <= 1e-3f || d <= 1e-3f * fabsf(want);
 }
@@ -78,8 +79,11 @@ int main() {
     for (int k = 0; k < ecg::kNumFeatures; ++k) {
       if (!Close(v[k], kBenchExpected[w][k])) {
         ++bad;
-        printf("  feature %d: got %.6g, expected %.6g\n", k, static_cast<double>(v[k]),
-               static_cast<double>(kBenchExpected[w][k]));
+        uint32_t gb, wb;
+        memcpy(&gb, &v[k], 4);
+        memcpy(&wb, &kBenchExpected[w][k], 4);
+        printf("  feature %d: got 0x%08lx, expected 0x%08lx\n", k, static_cast<unsigned long>(gb),
+               static_cast<unsigned long>(wb));
       }
     }
     const bool ok = bad == 0 && f.n_peaks == kBenchExpectedPeaks[w] &&

@@ -28,7 +28,9 @@ MODELS = [  # (display name, preds file, key)
 
 def int8_predictions(tflite_path, X):
     import tensorflow as tf
-    it = tf.lite.Interpreter(model_path=str(tflite_path))
+    # Reference kernels: match TFLM/CMSIS-NN on the device (XNNPACK rounds differently).
+    it = tf.lite.Interpreter(model_path=str(tflite_path),
+                             experimental_op_resolver_type=tf.lite.experimental.OpResolverType.BUILTIN_REF)
     it.allocate_tensors()
     i, o = it.get_input_details()[0], it.get_output_details()[0]
     s, z = i["quantization"]

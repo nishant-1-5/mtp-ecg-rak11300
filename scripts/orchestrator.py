@@ -132,17 +132,29 @@ def analyze_features(adc_windows):
 
 
 class Int8Cnn:
+    """INT8 model on TFLite's *reference* kernels.
+
+    The default desktop resolver uses XNNPACK, whose requantisation rounding
+    differs from TFLM/CMSIS-NN by up to 9 output LSB on this model. The
+    reference kernels agree with the device to within 1 LSB
+    (docs/phase2_tflm.md), so they are the reference here."""
+
     def __init__(self, path=TFLITE):
         import tensorflow as tf
         self.tf = tf
         self.path = str(path)
-        it = tf.lite.Interpreter(model_path=self.path)
+        it = self._interpreter()
         d = it.get_input_details()[0]
         self.scale, self.zero_point = d["quantization"]
 
+    def _interpreter(self):
+        return self.tf.lite.Interpreter(
+            model_path=self.path,
+            experimental_op_resolver_type=self.tf.lite.experimental.OpResolverType.BUILTIN_REF)
+
     def run(self, q_inputs):
         """q_inputs: (N, 1000) int8 -> (N, 5) probabilities."""
-        it = self.tf.lite.Interpreter(model_path=self.path)
+        it = self._interpreter()
         i, o = it.get_input_details()[0], it.get_output_details()[0]
         it.resize_tensor_input(i["index"], [len(q_inputs), q_inputs.shape[1], 1])
         it.allocate_tensors()

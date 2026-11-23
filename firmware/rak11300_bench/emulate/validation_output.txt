@@ -1,0 +1,404 @@
+=== RAK11300 Lead I pipeline + TFLM ===
+clk_sys = 125000000 Hz
+TFLM arena: 20788 B used of 21504 B; input scale 0.0541500450, zero point -25
+activation head 16000 B; Lead1Workspace (5780 B) overlaid on the arena head
+[0] fold10 #8: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.090 HYP 0.035 MI 0.027 NORM 0.891 STTC 0.012, max |diff| vs TFLite 0.0000
+  CNN invoke 175.23 ms, whole pipeline 295.00 ms, peak stack 1636 B
+[1] fold10 #27: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.039 HYP 0.027 MI 0.070 NORM 0.875 STTC 0.027, max |diff| vs TFLite 0.0000
+  CNN invoke 175.26 ms, whole pipeline 294.42 ms, peak stack 1636 B
+[2] fold10 #54: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.102 HYP 0.066 MI 0.074 NORM 0.789 STTC 0.113, max |diff| vs TFLite 0.0000
+  CNN invoke 175.29 ms, whole pipeline 294.21 ms, peak stack 1636 B
+[3] fold10 #164: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.078 HYP 0.051 MI 0.125 NORM 0.688 STTC 0.219, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 295.58 ms, peak stack 1636 B
+[4] fold10 #167: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.027 HYP 0.008 MI 0.020 NORM 0.961 STTC 0.004, max |diff| vs TFLite 0.0000
+  CNN invoke 175.28 ms, whole pipeline 296.58 ms, peak stack 1636 B
+[5] fold10 #192: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.043 HYP 0.219 MI 0.203 NORM 0.527 STTC 0.113, max |diff| vs TFLite 0.0000
+  CNN invoke 175.30 ms, whole pipeline 294.54 ms, peak stack 1636 B
+[6] fold10 #204: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.137 HYP 0.203 MI 0.164 NORM 0.336 STTC 0.449, max |diff| vs TFLite 0.0000
+  CNN invoke 175.32 ms, whole pipeline 295.81 ms, peak stack 1636 B
+[7] fold10 #226: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.031 HYP 0.031 MI 0.043 NORM 0.898 STTC 0.012, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 293.12 ms, peak stack 1636 B
+[8] fold10 #246: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x04 (expected 0x04)
+  probs CD 0.051 HYP 0.059 MI 0.371 NORM 0.203 STTC 0.336, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 293.53 ms, peak stack 1636 B
+[9] fold10 #306: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.164 HYP 0.074 MI 0.219 NORM 0.250 STTC 0.500, max |diff| vs TFLite 0.0000
+  CNN invoke 175.37 ms, whole pipeline 293.58 ms, peak stack 1636 B
+[10] fold10 #329: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.074 HYP 0.051 MI 0.129 NORM 0.617 STTC 0.238, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 294.83 ms, peak stack 1636 B
+[11] fold10 #334: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.094 HYP 0.102 MI 0.172 NORM 0.371 STTC 0.488, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 296.72 ms, peak stack 1636 B
+[12] fold10 #344: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.051 HYP 0.031 MI 0.027 NORM 0.898 STTC 0.016, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 297.21 ms, peak stack 1636 B
+[13] fold10 #348: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.031 HYP 0.051 MI 0.059 NORM 0.844 STTC 0.020, max |diff| vs TFLite 0.0000
+  CNN invoke 175.26 ms, whole pipeline 297.06 ms, peak stack 1636 B
+[14] fold10 #367: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.020 HYP 0.012 MI 0.027 NORM 0.941 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.23 ms, whole pipeline 294.20 ms, peak stack 1636 B
+[15] fold10 #368: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.082 HYP 0.098 MI 0.109 NORM 0.641 STTC 0.129, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 295.94 ms, peak stack 1636 B
+[16] fold10 #406: MATCH
+  quality 0x00 flags 0x0c cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.148 HYP 0.094 MI 0.203 NORM 0.359 STTC 0.434, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 295.69 ms, peak stack 1636 B
+[17] fold10 #412: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.090 HYP 0.164 MI 0.180 NORM 0.090 STTC 0.750, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 295.04 ms, peak stack 1636 B
+[18] fold10 #439: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.027 HYP 0.008 MI 0.035 NORM 0.941 STTC 0.004, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 294.46 ms, peak stack 1636 B
+[19] fold10 #443: MATCH
+  quality 0x20 flags 0x10 cnn skipped classes 0x00 (expected 0x00)
+  whole pipeline 114.21 ms, peak stack 576 B
+[20] fold10 #474: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.078 HYP 0.039 MI 0.098 NORM 0.812 STTC 0.027, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 295.13 ms, peak stack 1636 B
+[21] fold10 #489: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.031 HYP 0.047 MI 0.031 NORM 0.863 STTC 0.047, max |diff| vs TFLite 0.0000
+  CNN invoke 175.30 ms, whole pipeline 296.78 ms, peak stack 1636 B
+[22] fold10 #560: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x14 (expected 0x14)
+  probs CD 0.102 HYP 0.129 MI 0.289 NORM 0.074 STTC 0.723, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 299.30 ms, peak stack 1636 B
+[23] fold10 #569: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.062 HYP 0.043 MI 0.090 NORM 0.629 STTC 0.277, max |diff| vs TFLite 0.0000
+  CNN invoke 175.31 ms, whole pipeline 294.13 ms, peak stack 1636 B
+[24] fold10 #582: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.082 HYP 0.047 MI 0.137 NORM 0.527 STTC 0.324, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 298.68 ms, peak stack 1636 B
+[25] fold10 #588: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.371 HYP 0.652 MI 0.539 NORM 0.004 STTC 0.883, max |diff| vs TFLite 0.0000
+  CNN invoke 175.34 ms, whole pipeline 293.12 ms, peak stack 1636 B
+[26] fold10 #619: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.156 HYP 0.020 MI 0.027 NORM 0.891 STTC 0.012, max |diff| vs TFLite 0.0000
+  CNN invoke 175.22 ms, whole pipeline 294.56 ms, peak stack 1636 B
+[27] fold10 #635: MATCH
+  quality 0x00 flags 0x25 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.148 HYP 0.027 MI 0.082 NORM 0.730 STTC 0.098, max |diff| vs TFLite 0.0000
+  CNN invoke 175.20 ms, whole pipeline 300.57 ms, peak stack 1636 B
+[28] fold10 #672: MATCH
+  quality 0x00 flags 0x11 cnn ran classes 0x01 (expected 0x01)
+  probs CD 0.996 HYP 0.211 MI 0.211 NORM 0.000 STTC 0.098, max |diff| vs TFLite 0.0000
+  CNN invoke 175.18 ms, whole pipeline 301.16 ms, peak stack 1636 B
+[29] fold10 #682: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.082 HYP 0.016 MI 0.043 NORM 0.887 STTC 0.012, max |diff| vs TFLite 0.0000
+  CNN invoke 175.22 ms, whole pipeline 295.96 ms, peak stack 1636 B
+[30] fold10 #690: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.137 HYP 0.027 MI 0.020 NORM 0.883 STTC 0.016, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 296.97 ms, peak stack 1636 B
+[31] fold10 #709: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.117 HYP 0.020 MI 0.074 NORM 0.797 STTC 0.051, max |diff| vs TFLite 0.0000
+  CNN invoke 175.22 ms, whole pipeline 296.02 ms, peak stack 1636 B
+[32] fold10 #733: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.051 HYP 0.102 MI 0.113 NORM 0.688 STTC 0.055, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 295.71 ms, peak stack 1636 B
+[33] fold10 #734: MATCH
+  quality 0x00 flags 0x0c cnn ran classes 0x16 (expected 0x16)
+  probs CD 0.203 HYP 0.348 MI 0.410 NORM 0.012 STTC 0.863, max |diff| vs TFLite 0.0000
+  CNN invoke 175.29 ms, whole pipeline 297.33 ms, peak stack 1636 B
+[34] fold10 #753: MATCH
+  quality 0x00 flags 0x21 cnn ran classes 0x14 (expected 0x14)
+  probs CD 0.195 HYP 0.082 MI 0.527 NORM 0.023 STTC 0.551, max |diff| vs TFLite 0.0000
+  CNN invoke 175.22 ms, whole pipeline 303.74 ms, peak stack 1636 B
+[35] fold10 #765: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x14 (expected 0x14)
+  probs CD 0.109 HYP 0.238 MI 0.473 NORM 0.027 STTC 0.699, max |diff| vs TFLite 0.0000
+  CNN invoke 175.37 ms, whole pipeline 295.48 ms, peak stack 1636 B
+[36] fold10 #770: MATCH
+  quality 0x00 flags 0x05 cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.289 HYP 0.289 MI 0.410 NORM 0.039 STTC 0.676, max |diff| vs TFLite 0.0000
+  CNN invoke 175.28 ms, whole pipeline 302.44 ms, peak stack 1636 B
+[37] fold10 #873: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.020 HYP 0.020 MI 0.086 NORM 0.883 STTC 0.016, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 295.48 ms, peak stack 1636 B
+[38] fold10 #881: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.043 HYP 0.020 MI 0.051 NORM 0.852 STTC 0.090, max |diff| vs TFLite 0.0039
+  CNN invoke 175.30 ms, whole pipeline 293.98 ms, peak stack 1636 B
+[39] fold10 #895: MATCH
+  quality 0x00 flags 0x10 cnn ran classes 0x07 (expected 0x07)
+  probs CD 0.977 HYP 0.395 MI 0.488 NORM 0.000 STTC 0.371, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 299.53 ms, peak stack 1636 B
+[40] fold10 #905: MATCH
+  quality 0x00 flags 0x0c cnn ran classes 0x05 (expected 0x05)
+  probs CD 0.988 HYP 0.219 MI 0.449 NORM 0.000 STTC 0.043, max |diff| vs TFLite 0.0000
+  CNN invoke 175.30 ms, whole pipeline 294.35 ms, peak stack 1636 B
+[41] fold10 #918: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.043 HYP 0.043 MI 0.031 NORM 0.902 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.26 ms, whole pipeline 294.89 ms, peak stack 1636 B
+[42] fold10 #921: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.094 HYP 0.004 MI 0.055 NORM 0.891 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.21 ms, whole pipeline 296.83 ms, peak stack 1636 B
+[43] fold10 #923: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.031 HYP 0.051 MI 0.035 NORM 0.910 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.28 ms, whole pipeline 294.59 ms, peak stack 1636 B
+[44] fold10 #938: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.031 HYP 0.023 MI 0.059 NORM 0.871 STTC 0.047, max |diff| vs TFLite 0.0000
+  CNN invoke 175.30 ms, whole pipeline 293.97 ms, peak stack 1636 B
+[45] fold10 #943: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.082 HYP 0.027 MI 0.035 NORM 0.898 STTC 0.043, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 295.17 ms, peak stack 1636 B
+[46] fold10 #963: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.289 HYP 0.395 MI 0.449 NORM 0.012 STTC 0.797, max |diff| vs TFLite 0.0000
+  CNN invoke 175.26 ms, whole pipeline 297.61 ms, peak stack 1636 B
+[47] fold10 #964: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.039 HYP 0.039 MI 0.035 NORM 0.828 STTC 0.070, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 296.36 ms, peak stack 1636 B
+[48] fold10 #981: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.211 HYP 0.086 MI 0.051 NORM 0.750 STTC 0.066, max |diff| vs TFLite 0.0000
+  CNN invoke 175.19 ms, whole pipeline 295.89 ms, peak stack 1636 B
+[49] fold10 #986: MATCH
+  quality 0x00 flags 0x0c cnn ran classes 0x16 (expected 0x16)
+  probs CD 0.090 HYP 0.449 MI 0.711 NORM 0.000 STTC 0.711, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 297.91 ms, peak stack 1636 B
+[50] fold10 #1009: MATCH
+  quality 0x00 flags 0x0c cnn ran classes 0x14 (expected 0x14)
+  probs CD 0.188 HYP 0.172 MI 0.371 NORM 0.086 STTC 0.652, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 296.70 ms, peak stack 1636 B
+[51] fold10 #1016: MATCH
+  quality 0x00 flags 0x22 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.109 HYP 0.047 MI 0.051 NORM 0.805 STTC 0.051, max |diff| vs TFLite 0.0000
+  CNN invoke 175.26 ms, whole pipeline 294.62 ms, peak stack 1636 B
+[52] fold10 #1060: MATCH
+  quality 0x00 flags 0x10 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.141 HYP 0.016 MI 0.039 NORM 0.863 STTC 0.020, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 297.04 ms, peak stack 1636 B
+[53] fold10 #1075: MATCH
+  quality 0x00 flags 0x20 cnn ran classes 0x05 (expected 0x05)
+  probs CD 0.977 HYP 0.148 MI 0.711 NORM 0.004 STTC 0.051, max |diff| vs TFLite 0.0000
+  CNN invoke 175.21 ms, whole pipeline 299.42 ms, peak stack 1636 B
+[54] fold10 #1104: MATCH
+  quality 0x00 flags 0x20 cnn ran classes 0x09 (expected 0x09)
+  probs CD 0.371 HYP 0.059 MI 0.086 NORM 0.617 STTC 0.039, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 295.57 ms, peak stack 1636 B
+[55] fold10 #1123: MATCH
+  quality 0x00 flags 0x25 cnn ran classes 0x16 (expected 0x16)
+  probs CD 0.070 HYP 0.348 MI 0.359 NORM 0.004 STTC 0.902, max |diff| vs TFLite 0.0000
+  CNN invoke 175.29 ms, whole pipeline 304.10 ms, peak stack 1636 B
+[56] fold10 #1160: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x16 (expected 0x16)
+  probs CD 0.137 HYP 0.527 MI 0.250 NORM 0.027 STTC 0.742, max |diff| vs TFLite 0.0000
+  CNN invoke 175.35 ms, whole pipeline 296.04 ms, peak stack 1636 B
+[57] fold10 #1183: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.086 HYP 0.016 MI 0.059 NORM 0.859 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 294.81 ms, peak stack 1636 B
+[58] fold10 #1201: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x0c (expected 0x0c)
+  probs CD 0.051 HYP 0.113 MI 0.289 NORM 0.488 STTC 0.238, max |diff| vs TFLite 0.0000
+  CNN invoke 175.21 ms, whole pipeline 298.06 ms, peak stack 1636 B
+[59] fold10 #1248: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x14 (expected 0x14)
+  probs CD 0.078 HYP 0.164 MI 0.395 NORM 0.129 STTC 0.512, max |diff| vs TFLite 0.0000
+  CNN invoke 175.30 ms, whole pipeline 298.14 ms, peak stack 1636 B
+[60] fold10 #1257: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x14 (expected 0x14)
+  probs CD 0.062 HYP 0.109 MI 0.395 NORM 0.129 STTC 0.500, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 297.01 ms, peak stack 1636 B
+[61] fold10 #1259: MATCH
+  quality 0x00 flags 0x01 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.070 HYP 0.059 MI 0.090 NORM 0.652 STTC 0.230, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 300.79 ms, peak stack 1636 B
+[62] fold10 #1269: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.039 HYP 0.008 MI 0.035 NORM 0.934 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 293.46 ms, peak stack 1636 B
+[63] fold10 #1289: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.059 HYP 0.078 MI 0.070 NORM 0.762 STTC 0.086, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 297.86 ms, peak stack 1636 B
+[64] fold10 #1319: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.129 HYP 0.125 MI 0.188 NORM 0.148 STTC 0.664, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 297.60 ms, peak stack 1636 B
+[65] fold10 #1325: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x16 (expected 0x16)
+  probs CD 0.113 HYP 0.527 MI 0.488 NORM 0.004 STTC 0.871, max |diff| vs TFLite 0.0000
+  CNN invoke 175.34 ms, whole pipeline 295.53 ms, peak stack 1636 B
+[66] fold10 #1330: MATCH
+  quality 0x00 flags 0x01 cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.730 HYP 0.410 MI 0.629 NORM 0.004 STTC 0.617, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 300.19 ms, peak stack 1636 B
+[67] fold10 #1346: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x05 (expected 0x05)
+  probs CD 0.711 HYP 0.238 MI 0.473 NORM 0.059 STTC 0.324, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 297.34 ms, peak stack 1636 B
+[68] fold10 #1349: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.102 HYP 0.008 MI 0.117 NORM 0.820 STTC 0.023, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 296.56 ms, peak stack 1636 B
+[69] fold10 #1355: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.016 HYP 0.062 MI 0.109 NORM 0.742 STTC 0.066, max |diff| vs TFLite 0.0000
+  CNN invoke 175.26 ms, whole pipeline 296.11 ms, peak stack 1636 B
+[70] fold10 #1371: MATCH
+  quality 0x00 flags 0x25 cnn ran classes 0x16 (expected 0x16)
+  probs CD 0.117 HYP 0.566 MI 0.422 NORM 0.000 STTC 0.902, max |diff| vs TFLite 0.0000
+  CNN invoke 175.26 ms, whole pipeline 306.33 ms, peak stack 1636 B
+[71] fold10 #1395: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.051 HYP 0.020 MI 0.031 NORM 0.914 STTC 0.004, max |diff| vs TFLite 0.0000
+  CNN invoke 175.22 ms, whole pipeline 295.93 ms, peak stack 1636 B
+[72] fold10 #1404: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.055 HYP 0.039 MI 0.211 NORM 0.348 STTC 0.461, max |diff| vs TFLite 0.0000
+  CNN invoke 175.31 ms, whole pipeline 297.07 ms, peak stack 1636 B
+[73] fold10 #1458: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.035 HYP 0.004 MI 0.027 NORM 0.941 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.29 ms, whole pipeline 296.24 ms, peak stack 1636 B
+[74] fold10 #1489: MATCH
+  quality 0x00 flags 0x0c cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.730 HYP 0.578 MI 0.527 NORM 0.000 STTC 0.750, max |diff| vs TFLite 0.0000
+  CNN invoke 175.28 ms, whole pipeline 298.43 ms, peak stack 1636 B
+[75] fold10 #1495: MATCH
+  quality 0x20 flags 0x00 cnn skipped classes 0x00 (expected 0x00)
+  whole pipeline 114.36 ms, peak stack 576 B
+[76] fold10 #1504: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.066 HYP 0.023 MI 0.137 NORM 0.641 STTC 0.238, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 296.21 ms, peak stack 1636 B
+[77] fold10 #1514: MATCH
+  quality 0x00 flags 0x25 cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.902 HYP 0.434 MI 0.488 NORM 0.000 STTC 0.566, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 299.73 ms, peak stack 1636 B
+[78] fold10 #1570: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.039 HYP 0.043 MI 0.020 NORM 0.922 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.31 ms, whole pipeline 293.75 ms, peak stack 1636 B
+[79] fold10 #1576: MATCH
+  quality 0x00 flags 0x04 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.043 HYP 0.039 MI 0.035 NORM 0.922 STTC 0.004, max |diff| vs TFLite 0.0000
+  CNN invoke 175.22 ms, whole pipeline 295.90 ms, peak stack 1636 B
+[80] fold10 #1636: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.035 HYP 0.086 MI 0.059 NORM 0.641 STTC 0.203, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 297.54 ms, peak stack 1636 B
+[81] fold10 #1693: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x14 (expected 0x14)
+  probs CD 0.094 HYP 0.195 MI 0.578 NORM 0.008 STTC 0.723, max |diff| vs TFLite 0.0000
+  CNN invoke 175.29 ms, whole pipeline 298.54 ms, peak stack 1636 B
+[82] fold10 #1719: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.090 HYP 0.023 MI 0.043 NORM 0.871 STTC 0.047, max |diff| vs TFLite 0.0000
+  CNN invoke 175.21 ms, whole pipeline 295.74 ms, peak stack 1636 B
+[83] fold10 #1726: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x10 (expected 0x10)
+  probs CD 0.062 HYP 0.102 MI 0.117 NORM 0.410 STTC 0.434, max |diff| vs TFLite 0.0000
+  CNN invoke 175.32 ms, whole pipeline 294.87 ms, peak stack 1636 B
+[84] fold10 #1747: MATCH
+  quality 0x00 flags 0x25 cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.301 HYP 0.301 MI 0.449 NORM 0.012 STTC 0.730, max |diff| vs TFLite 0.0000
+  CNN invoke 175.22 ms, whole pipeline 305.54 ms, peak stack 1636 B
+[85] fold10 #1753: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x17 (expected 0x17)
+  probs CD 0.336 HYP 0.395 MI 0.527 NORM 0.004 STTC 0.762, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 298.34 ms, peak stack 1636 B
+[86] fold10 #1781: MATCH
+  quality 0x00 flags 0x01 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.094 HYP 0.020 MI 0.156 NORM 0.641 STTC 0.203, max |diff| vs TFLite 0.0000
+  CNN invoke 175.19 ms, whole pipeline 300.70 ms, peak stack 1636 B
+[87] fold10 #1792: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.203 HYP 0.039 MI 0.129 NORM 0.711 STTC 0.098, max |diff| vs TFLite 0.0000
+  CNN invoke 175.28 ms, whole pipeline 294.49 ms, peak stack 1636 B
+[88] fold10 #1855: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.086 HYP 0.078 MI 0.164 NORM 0.566 STTC 0.203, max |diff| vs TFLite 0.0000
+  CNN invoke 175.28 ms, whole pipeline 296.93 ms, peak stack 1636 B
+[89] fold10 #1875: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x14 (expected 0x14)
+  probs CD 0.109 HYP 0.156 MI 0.812 NORM 0.004 STTC 0.395, max |diff| vs TFLite 0.0000
+  CNN invoke 175.30 ms, whole pipeline 294.39 ms, peak stack 1636 B
+[90] fold10 #1915: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.039 HYP 0.043 MI 0.043 NORM 0.863 STTC 0.047, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 296.15 ms, peak stack 1636 B
+[91] fold10 #1923: MATCH
+  quality 0x00 flags 0x05 cnn ran classes 0x15 (expected 0x15)
+  probs CD 0.289 HYP 0.148 MI 0.461 NORM 0.016 STTC 0.590, max |diff| vs TFLite 0.0000
+  CNN invoke 175.28 ms, whole pipeline 300.50 ms, peak stack 1636 B
+[92] fold10 #1983: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.129 HYP 0.016 MI 0.020 NORM 0.891 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.20 ms, whole pipeline 295.04 ms, peak stack 1636 B
+[93] fold10 #2011: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.051 HYP 0.117 MI 0.059 NORM 0.641 STTC 0.289, max |diff| vs TFLite 0.0000
+  CNN invoke 175.26 ms, whole pipeline 298.62 ms, peak stack 1636 B
+[94] fold10 #2016: MATCH
+  quality 0x00 flags 0x24 cnn ran classes 0x05 (expected 0x05)
+  probs CD 0.762 HYP 0.180 MI 0.605 NORM 0.023 STTC 0.258, max |diff| vs TFLite 0.0000
+  CNN invoke 175.27 ms, whole pipeline 299.12 ms, peak stack 1636 B
+[95] fold10 #2031: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.031 HYP 0.016 MI 0.078 NORM 0.859 STTC 0.031, max |diff| vs TFLite 0.0000
+  CNN invoke 175.24 ms, whole pipeline 295.25 ms, peak stack 1636 B
+[96] fold10 #2044: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x04 (expected 0x04)
+  probs CD 0.148 HYP 0.059 MI 0.461 NORM 0.336 STTC 0.230, max |diff| vs TFLite 0.0000
+  CNN invoke 175.25 ms, whole pipeline 294.16 ms, peak stack 1636 B
+[97] fold10 #2089: MATCH
+  quality 0x00 flags 0x02 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.035 HYP 0.016 MI 0.035 NORM 0.918 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.23 ms, whole pipeline 294.15 ms, peak stack 1636 B
+[98] fold10 #2097: MATCH
+  quality 0x00 flags 0x10 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.113 HYP 0.008 MI 0.043 NORM 0.898 STTC 0.008, max |diff| vs TFLite 0.0000
+  CNN invoke 175.19 ms, whole pipeline 297.20 ms, peak stack 1636 B
+[99] fold10 #2130: MATCH
+  quality 0x00 flags 0x00 cnn ran classes 0x08 (expected 0x08)
+  probs CD 0.137 HYP 0.078 MI 0.219 NORM 0.488 STTC 0.137, max |diff| vs TFLite 0.0000
+  CNN invoke 175.34 ms, whole pipeline 296.02 ms, peak stack 1636 B
+peak core-0 stack over all windows: 1636 B
+=== PASS: 100 of 100 windows match the Python reference ===

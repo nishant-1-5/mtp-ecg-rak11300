@@ -31,5 +31,16 @@ static const float kBenchExpected[BENCH_NUM_WINDOWS][BENCH_NUM_FEATURES] = {
 static const uint8_t kBenchExpectedPeaks[BENCH_NUM_WINDOWS] = {13, 13, 10, 16, 26, 16};
 static const uint8_t kBenchExpectedQuality[BENCH_NUM_WINDOWS] = {0, 0, 0, 0, 0, 16};
 static const uint8_t kBenchExpectedFlags[BENCH_NUM_WINDOWS] = {0, 16, 0, 12, 33, 21};
+// INT8 CNN (TFLite) on the Python-quantised input; class bits CD,HYP,MI,NORM,STTC,
+// 0 when the quality gate rejects the window.
+static const float kBenchExpectedProbs[BENCH_NUM_WINDOWS][5] = {
+  {8.593750000e-02f, 1.171875000e-02f, 6.640625000e-02f, 8.593750000e-01f, 4.296875000e-02f},
+  {9.414062500e-01f, 2.304687500e-01f, 5.000000000e-01f, 7.812500000e-03f, 2.304687500e-01f},
+  {1.250000000e-01f, 1.171875000e-02f, 5.078125000e-02f, 8.593750000e-01f, 1.171875000e-02f},
+  {2.382812500e-01f, 7.031250000e-02f, 1.367187500e-01f, 2.304687500e-01f, 4.726562500e-01f},
+  {2.500000000e-01f, 3.359375000e-01f, 5.000000000e-01f, 3.906250000e-03f, 7.695312500e-01f},
+  {3.242187500e-01f, 9.375000000e-02f, 4.726562500e-01f, 1.875000000e-01f, 2.109375000e-01f},
+};
+static const uint8_t kBenchExpectedClasses[BENCH_NUM_WINDOWS] = {8, 5, 8, 16, 23, 0};
 
 #endif  // BENCH_VECTORS_H_

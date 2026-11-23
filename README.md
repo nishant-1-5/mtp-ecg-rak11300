@@ -27,8 +27,10 @@ results/            predictions, metrics, figures (3lead/, lead1/, features/)
 firmware/
   ecg_features/     Lead I feature extraction + delineation (C++14, no heap)
   ecg_pipeline/     quality gate, rhythm flags, CNN input prep, decisions
+  ecg_cnn/          TensorFlow Lite Micro wrapper for the INT8 CNN
+  cmake/            pico-tflmicro build integration
   host_test/        host harnesses for the parity tests
-  rak11300_bench/   Pico SDK benchmark firmware (build.ps1 -> .uf2)
+  rak11300_bench/   Pico SDK firmware (build.ps1 -> .uf2) + rp2040js emulator runner
 docs/               design notes and results (start with the list below)
 ```
 
@@ -39,6 +41,7 @@ docs/               design notes and results (start with the list below)
 | `docs/delineation.md` | PR/QRS/QT method, validation vs GE 12SL (PTB-XL+) |
 | `docs/phase1_feature_port.md` | C++ feature port and parity results |
 | `docs/orchestrator.md` | On-device decision logic, gate, flags, noise stress test |
+| `docs/phase2_tflm.md` | TFLM on the RP2040 (emulated): correctness, arena, stack, latency, flash |
 | `docs/presentation/` | Mid-term slides |
 
 ## Setup
@@ -63,7 +66,7 @@ trains. The 3-lead baseline notebooks, with their original outputs, are at git t
 
 ### Done
 
-- **Lead I retrain** (`docs/lead1_retrain.md`). Deployed INT8 1D-CNN: **macro AUC 0.8294** on the
+- **Lead I retrain** (`docs/lead1_retrain.md`). Deployed INT8 1D-CNN: **macro AUC 0.829** on the
   fold-10 test set (3-lead float baseline: 0.8832). It is 25,184 B, and it matches the Lead I
   ResNet + attention ceiling (0.8310). Per-window z-score input keeps the INT8 loss under 0.001.
 - **Working PR/QRS/QT** (`docs/delineation.md`). Lead I QRS separates CD as well as the 12-lead
@@ -73,27 +76,24 @@ trains. The 3-lead baseline notebooks, with their original outputs, are at git t
   workspace.
 - **Orchestrator** (`firmware/ecg_pipeline`, `docs/orchestrator.md`). The quality gate passes
   97.4 % of clean windows and rejects 83 % at −6 dB electrode-motion noise. Rhythm flags reach
-  0.94 sensitivity for TACHY and 0.91 for IRREGULAR (vs AF). Class decisions reach macro F1 0.605.
+  0.94 sensitivity for TACHY and 0.91 for IRREGULAR (vs AF). Class decisions reach macro F1 0.604.
   The C++ matches Python on all 3,778 test windows.
 - **RP2040 build** (`firmware/rak11300_bench`). It builds with the Pico SDK 2.2.0 and a portable
   Arm GCC 15.3 kept in `.toolchain/`. ECG code plus model is 39,328 B of flash with no double
   arithmetic. The benchmark checks its own results against Python on the board.
+- **TFLM on the RP2040** (`firmware/ecg_cnn`, `docs/phase2_tflm.md`). With no board available,
+  the unmodified firmware ran on the rp2040js emulator. All 100 random test windows match Python
+  end-to-end. The arena uses 20,788 B and the stack peaks at 1,636 B. Total pipeline SRAM is
+  27.7 KB (target < 30 KB). Per 10 s window: CNN 175 ms, whole pipeline ~300 ms at 125 MHz.
 
 ### Next
 
-**Phase 1:** flash `rak11300_bench.uf2` and record per-stage latency on the RAK11300. The board
-step needs the hardware; see `firmware/rak11300_bench/README.md`.
+**Hardware (when a RAK11300 or any RP2040 board is available):** flash
+`rak11300_pipeline.uf2`, then record real latency and power (`firmware/rak11300_bench/README.md`).
 
-**Phase 2: on-device TFLM**
-- Run `models/lead1/model_data.h` under TensorFlow Lite Micro, with the TFLM interpreter as the
-  `CnnFn` callback.
-- Measure arena size, peak stack, latency and power.
+**Phase 3 (needs the lab front end):** record live ECG, set `AdcInfo`, re-check gate thresholds.
 
-**Phase 3: domain adaptation**
-- Record live ECG from the lab front end and set `AdcInfo` (scale, rails).
-- Re-check gate thresholds and recalibrate on device data.
-
-**Phase 4:** update the slides with on-device numbers and write the MTP report.
+**Phase 4:** MTP report and updated slides (`docs/report/`).
 
 ## Data sources and attribution
 
@@ -122,5 +122,6 @@ the linked documents.
 - **"Mean_QRS > 120 ms isolates CD":** this came from a mislabeled plot that actually showed
   RR range. The original interval features did not work either (QT median 0.8 ms). Both are fixed;
   see `docs/delineation.md` and `results/features/lead1_justification.png`.
-- **Model size:** the old "~22 KB" is now 25,184 B for the Lead I INT8 model. The ~18 KB arena is
-  still unmeasured.
+- **Model size and memory:** the old "~22 KB" is now 25,184 B for the Lead I INT8 model. The
+  arena is 20,788 B (emulator-measured), and the TFLM runtime adds ~107 KB of flash on top.
+- **"45 ms inference":** on the RP2040 at 125 MHz the CNN takes ~175 ms (emulator).

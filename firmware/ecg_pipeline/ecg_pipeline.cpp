@@ -24,7 +24,7 @@ uint8_t AssessQuality(const int16_t* adc, int n, const AdcInfo& info, const Lead
     reasons |= kQualityNoRhythm;
   if (f.n_beats < params::kMinBeats)
     reasons |= kQualityNoTemplate;
-  else if (!(f.template_corr >= params::kMinTemplateCorr))  // also catches NaN
+  else if (IsNan(f.template_corr) || f.template_corr < params::kMinTemplateCorr)
     reasons |= kQualityNoisy;
   if (f.baseline_wander > params::kMaxBaselineWander) reasons |= kQualityBaseline;
   return reasons;
@@ -36,10 +36,10 @@ uint8_t RhythmFlags(const Lead1Features& f) {
   if (f.mean_hr < params::kBradyBpm) flags |= kFlagBrady;
   if (f.rr_cv >= params::kIrregularRrCv) {
     flags |= kFlagIrregular;
-    if (f.pr_ms != f.pr_ms) flags |= kFlagAfSuspect;  // no P wave (NaN)
+    if (IsNan(f.pr_ms)) flags |= kFlagAfSuspect;  // no P wave
   }
-  if (f.qrs_ms >= params::kWideQrsMs) flags |= kFlagWideQrs;  // false for NaN
-  if (f.pr_ms > params::kLongPrMs) flags |= kFlagLongPr;
+  if (!IsNan(f.qrs_ms) && f.qrs_ms >= params::kWideQrsMs) flags |= kFlagWideQrs;
+  if (!IsNan(f.pr_ms) && f.pr_ms > params::kLongPrMs) flags |= kFlagLongPr;
   return flags;
 }
 

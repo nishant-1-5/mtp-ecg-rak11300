@@ -530,10 +530,13 @@ int ExtractLead1Features(const int16_t* adc, int n, real_t mv_per_lsb,
       }
       real_t qrs_on, qrs_off, t_end, p_on;
       if (DelineateTemplate(tmpl, mean_rr, &qrs_on, &qrs_off, &t_end, &p_on)) {
+        // Only finite fiducials enter arithmetic (see IsNan in ecg_features.h).
         out->qrs_ms = (qrs_off - qrs_on) * kMsPerSample;
-        out->pr_ms = (qrs_on - p_on) * kMsPerSample;  // NaN if no P wave
-        out->qt_ms = (t_end - qrs_on) * kMsPerSample;  // NaN if no T end
-        if (mean_rr > 0) out->qtc_ms = out->qt_ms / Sqrt(mean_rr / real_t(1000));
+        if (!IsNan(p_on)) out->pr_ms = (qrs_on - p_on) * kMsPerSample;
+        if (!IsNan(t_end)) {
+          out->qt_ms = (t_end - qrs_on) * kMsPerSample;
+          if (mean_rr > 0) out->qtc_ms = out->qt_ms / Sqrt(mean_rr / real_t(1000));
+        }
       }
     }
     out->n_beats = static_cast<uint8_t>(n_beats);

@@ -1,0 +1,51 @@
+=== RAK11300 Lead I pipeline benchmark ===
+clk_sys = 125000000 Hz, sizeof(Lead1Workspace) = 5780 B, sizeof(Lead1Features) = 80 B
+[0] NORM, regular: MATCH (peaks 13, quality 0x00, flags 0x00)
+  features total: 114.92 ms
+    filter + R peaks     35.05 ms
+    HRV                  0.18 ms
+    delineation + SQI    29.08 ms
+    Hjorth               1.74 ms
+    Welch PSD            48.86 ms
+  gate + flags + CNN input prep: 7.25 ms
+[1] CD, wide QRS: MATCH (peaks 13, quality 0x00, flags 0x10)
+  features total: 114.74 ms
+    filter + R peaks     33.99 ms
+    HRV                  0.17 ms
+    delineation + SQI    29.88 ms
+    Hjorth               1.75 ms
+    Welch PSD            48.95 ms
+  gate + flags + CNN input prep: 7.25 ms
+[2] MI: MATCH (peaks 10, quality 0x00, flags 0x00)
+  features total: 111.71 ms
+    filter + R peaks     33.53 ms
+    HRV                  0.13 ms
+    delineation + SQI    27.39 ms
+    Hjorth               1.75 ms
+    Welch PSD            48.92 ms
+  gate + flags + CNN input prep: 7.28 ms
+[3] irregular, no P wave: MATCH (peaks 16, quality 0x00, flags 0x0c)
+  features total: 117.52 ms
+    filter + R peaks     35.16 ms
+    HRV                  0.21 ms
+    delineation + SQI    31.50 ms
+    Hjorth               1.75 ms
+    Welch PSD            48.90 ms
+  gate + flags + CNN input prep: 7.23 ms
+[4] tachycardic: MATCH (peaks 26, quality 0x00, flags 0x21)
+  features total: 125.55 ms
+    filter + R peaks     34.51 ms
+    HRV                  0.35 ms
+    delineation + SQI    39.99 ms
+    Hjorth               1.75 ms
+    Welch PSD            48.96 ms
+  gate + flags + CNN input prep: 7.26 ms
+[5] NORM + electrode motion -6 dB: MATCH (peaks 16, quality 0x10, flags 0x15)
+  features total: 117.80 ms
+    filter + R peaks     34.74 ms
+    HRV                  0.21 ms
+    delineation + SQI    32.16 ms
+    Hjorth               1.75 ms
+    Welch PSD            48.95 ms
+  gate + flags + CNN input prep: 7.24 ms
+=== PASS: 6 of 6 windows match the Python reference ===

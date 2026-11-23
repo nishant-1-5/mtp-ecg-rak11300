@@ -61,19 +61,19 @@ the evaluation below.
 ## Results (fold 10, from `results/lead1/orchestrator_eval.md`)
 
 **Clean windows.** 97.4 % pass the gate (57 of 2,158 rejected: 47 noisy, 14 baseline, 1 no
-rhythm). Macro AUC is 0.8294 over all windows and 0.8305 over passed windows.
+rhythm). Macro AUC is 0.8292 over all windows and 0.8303 over passed windows.
 
 **Class decisions** use per-class thresholds that maximise F1 on the last 10 % of the training
-folds (Keras' `validation_split`, never trained on). Macro F1 is **0.605**, against 0.514 with a
+folds (Keras' `validation_split`, never trained on). Macro F1 is **0.604**, against 0.515 with a
 flat 0.5 threshold.
 
 | Class | Threshold | F1 | Sensitivity | Specificity |
 |---|---:|---:|---:|---:|
-| CD | 0.24 | 0.588 | 0.536 | 0.916 |
-| HYP | 0.24 | 0.425 | 0.466 | 0.901 |
+| CD | 0.24 | 0.589 | 0.534 | 0.919 |
+| HYP | 0.24 | 0.423 | 0.462 | 0.902 |
 | MI | 0.24 | 0.559 | 0.606 | 0.814 |
-| NORM | 0.42 | 0.794 | 0.957 | 0.629 |
-| STTC | 0.38 | 0.659 | 0.688 | 0.872 |
+| NORM | 0.42 | 0.792 | 0.954 | 0.627 |
+| STTC | 0.38 | 0.657 | 0.686 | 0.871 |
 
 **Rhythm and interval flags vs PTB-XL statements (clean windows)**
 
@@ -97,15 +97,18 @@ Lead I PR reads ~24 ms shorter than 12SL (`docs/delineation.md`). A bias-correct
 |---|---:|---:|---:|---:|
 | electrode motion | +6 dB | 5.6 % | 0.812 | 0.814 |
 | electrode motion | 0 dB | 20.6 % | 0.765 | 0.767 |
-| electrode motion | −6 dB | 82.5 % | 0.655 | 0.694 |
-| muscle | −6 dB | 43.0 % | 0.750 | 0.756 |
-| baseline wander | −6 dB | 47.4 % | 0.787 | 0.801 |
+| electrode motion | −6 dB | 82.5 % | 0.653 | 0.694 |
+| muscle | −6 dB | 43.0 % | 0.750 | 0.757 |
+| baseline wander | −6 dB | 47.4 % | 0.786 | 0.801 |
 
 The gate rejects more as noise grows, and the windows it passes score better than the full set.
 The CNN tolerates baseline wander and muscle noise well. Electrode motion hurts it most, and the
 gate rejects that noise most aggressively. At the 2 % clean-rejection budget, about 17 % of
 windows still pass at −6 dB electrode motion, with AUC 0.694. A stricter gate trades clean-signal
 availability for that. Revisit with recordings from the actual front end (Phase 3).
+
+INT8 numbers use TFLite's reference kernels (`BUILTIN_REF`), which match TFLM on the RP2040
+to within 1 output LSB (`docs/phase2_tflm.md`). With desktop XNNPACK the macro AUC was 0.8294.
 
 ## C++ parity (`scripts/compare_pipeline.py`)
 

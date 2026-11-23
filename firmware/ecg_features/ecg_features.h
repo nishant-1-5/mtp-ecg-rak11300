@@ -70,6 +70,22 @@ struct Lead1Features {
 
 constexpr int kNumFeatures = 18;
 
+// NaN test on the bit pattern. Do not use `v != v` or arithmetic on NaN in this
+// code base: the RP2040 SDK's fast float routines are built without NaN
+// propagation (PICO_FLOAT_PROPAGATE_NANS=0), so NaN compares and arithmetic do
+// not follow IEEE rules on the device.
+inline bool IsNan(real_t v) {
+#ifdef ECG_USE_DOUBLE
+  uint64_t b;
+  __builtin_memcpy(&b, &v, sizeof b);
+  return (b & 0x7FF0000000000000ull) == 0x7FF0000000000000ull && (b & 0x000FFFFFFFFFFFFFull) != 0;
+#else
+  uint32_t b;
+  __builtin_memcpy(&b, &v, sizeof b);
+  return (b & 0x7F800000u) == 0x7F800000u && (b & 0x007FFFFFu) != 0;
+#endif
+}
+
 // Caller-owned scratch memory. Reused for every window; contents are
 // meaningless between calls. Keep one static instance.
 struct Lead1Workspace {

@@ -7,6 +7,7 @@ $repo = Resolve-Path (Join-Path $here '..\..')
 $tc = Join-Path $repo '.toolchain'
 
 $env:PICO_SDK_PATH = Join-Path $tc 'pico-sdk'
+$env:PICO_TFLMICRO_PATH = Join-Path $tc 'pico-tflmicro'
 $env:PICO_TOOLCHAIN_PATH = $tc
 $cmakeDir = Get-ChildItem $tc -Directory -Filter 'cmake-*' | Select-Object -First 1
 $env:PATH = (Join-Path $tc 'bin') + ';' + (Join-Path $cmakeDir.FullName 'bin') + ';' +
@@ -18,4 +19,6 @@ cmake -S $here -B $build -G Ninja -DCMAKE_BUILD_TYPE=Release "-Dpicotool_DIR=$pi
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 cmake --build $build
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& (Join-Path $tc 'bin\arm-none-eabi-size.exe') (Join-Path $build 'rak11300_bench.elf')
+foreach ($t in 'rak11300_bench', 'rak11300_pipeline') {
+  & (Join-Path $tc 'bin\arm-none-eabi-size.exe') (Join-Path $build "$t.elf")
+}

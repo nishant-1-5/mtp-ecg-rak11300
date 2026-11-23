@@ -25,13 +25,16 @@ logging, and stacks on both cores, and it keeps the design portable to smaller p
 | Buffer | Bytes | Status | Notes |
 |---|---:|---|---|
 | Acquisition ping-pong, 2 × 1000 × `int16_t` | 4,000 | design | One window is analysed while the next fills. |
-| `ecg::Lead1Workspace` | 5,780 | measured (`sizeof`, float build) | Breakdown in §3. |
-| `ecg::Lead1Features` output | 76 | measured | |
-| TFLM tensor arena | ~18,000 | estimate | README figure for the 3-lead model; the Lead I input tensor is 3× smaller. Re-measure with `arena_used_bytes()` in Phase 2. |
-| **Total** | **~27,860** | | Excludes stacks and the TFLM interpreter object. |
+| TFLM tensor arena (`kCnnArenaSize`) | 21,504 | measured on rp2040js: 20,788 used | 16,000 B activation head + 4,788 B persistent tail. |
+| `ecg::Lead1Workspace` | 0 extra (5,780) | measured | Overlaid on the arena's activation head; see `docs/phase2_tflm.md`. |
+| TFLM interpreter + op resolver objects | 568 | measured (`nm`) | |
+| `ecg::Lead1Features` / `PipelineResult` | ~100 | measured | on the stack |
+| Peak core-0 stack, whole pipeline | 1,636 | measured (painted stack) | |
+| **Total** | **27,708** | | Under the 30 KB target; 33,488 B without the overlay. |
 
-Flash (for reference): Lead I model `25,184 B` (`g_model_len` in `models/lead1/model_data.h`; the 3-lead
-model was 25,552 B, the README's "~22 KB" is stale), cosine table `516 B`, code size TBD once the firmware links.
+Flash: Lead I model 25,184 B, feature + decision code 13,948 B, TFLM wrapper ~4.3 KB, so about
+43 KB of our own code and data. The TFLM + CMSIS-NN runtime adds 106,744 B. The whole test image
+is 234 KB of the 2 MB flash (`docs/phase2_tflm.md`).
 
 ## 3. Decisions taken in the Phase 1 feature port
 
@@ -93,12 +96,13 @@ Measured with the Arm GNU Toolchain 15.3 build of `firmware/rak11300_bench` (`-O
 | `Lead1Workspace` | 5,780 B .bss |
 | Double-precision arithmetic in the ECG code | none (`nm -u` lists only `__aeabi_f*`) |
 
+Latency on the rp2040js emulator at 125 MHz (`docs/phase2_tflm.md`): features 112–126 ms, CNN
+175 ms, whole pipeline 294–308 ms per 10 s window (~3 % of one core).
+
 Open:
 
-- **Latency on the board:** flash `rak11300_bench.uf2` and read the per-stage times over USB serial
-  (`firmware/rak11300_bench/README.md`). A rough operation count (~200k float operations per
-  window, tens of cycles each in the ROM float routines) suggests tens of milliseconds per 10 s
-  window. Measure before optimising.
-- **Arena size, peak stack and CNN latency:** Phase 2, with `arena_used_bytes()` and a painted stack.
+- **Latency on the board:** flash `rak11300_pipeline.uf2` and read the times over USB serial
+  (`firmware/rak11300_bench/README.md`). The emulator does not model XIP cache misses, so expect
+  somewhat higher numbers on hardware.
 - **XIP:** code runs from flash through a 16 KB cache. If the board numbers are worse than expected,
-  move the hot loops (`FilterPass`, `Fft256`) to RAM with `__not_in_flash_func`.
+  move the hot loops (`FilterPass`, `Fft256`, CMSIS-NN conv) to RAM with `__not_in_flash_func`.

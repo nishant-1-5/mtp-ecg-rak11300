@@ -43,6 +43,10 @@ other models.
 
 Deployed Lead I model, per class (INT8 AUC): CD 0.812, HYP 0.790, MI 0.787, NORM 0.887, STTC 0.870.
 
+INT8 numbers in this table come from desktop TFLite with XNNPACK. Re-evaluated with TFLite's
+reference kernels, which match TFLM on the RP2040 to within 1 output LSB (`docs/phase2_tflm.md`),
+the deployed model scores 0.8292 (`results/lead_set_comparison.md`).
+
 What this shows:
 
 - **With identical features, losing Leads II/III costs about 0.05 macro AUC for every model type.**
