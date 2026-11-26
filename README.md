@@ -44,6 +44,7 @@ docs/               design notes and results (start with the list below)
 | `docs/phase2_tflm.md` | TFLM on the RP2040 (emulated): correctness, arena, stack, latency, flash |
 | `docs/presentation/` | Mid-term slides and the final deck |
 | `docs/report/` | MTP report (Markdown, Word, PDF) |
+| `results/ablation/` | Lead / sampling-rate ablation, measured (`scripts/run_lead_ablation.py`) |
 
 ## Setup
 
