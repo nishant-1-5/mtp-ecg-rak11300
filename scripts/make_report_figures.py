@@ -524,7 +524,48 @@ def fig_verification():
     save(fig, "fig_verification.png")
 
 
+def fig_ablation():
+    d = pd.read_csv(P.ROOT / "results" / "ablation" / "lead_ablation.csv")
+    cnn = d[d.model == "Compact separable CNN"].copy()
+    label = {"12_lead": "12 leads", "limb_6": "6 limb\n(I-III, aVR/L/F)", "basic_3": "3 limb\n(I, II, III)",
+             "precordial_6": "6 chest\n(V1-V6)", "lead_I": "Lead I\n(hardware)"}
+    order = ["12_lead", "limb_6", "basic_3", "precordial_6", "lead_I"]
+    r100 = cnn[cnn.sampling_hz == 100].set_index("lead_set").loc[order]
+    r50 = cnn[cnn.sampling_hz == 50].set_index("lead_set")
+    fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 3.9), gridspec_kw={"width_ratios": [1.25, 1]})
+    x = np.arange(len(order))
+    err = np.vstack([r100.macro_auroc - r100.auroc_ci_lo, r100.auroc_ci_hi - r100.macro_auroc])
+    cols = [GREY, GREY, GREY, GREY, BLUE]
+    a1.bar(x - 0.18, r100.macro_auroc, 0.36, yerr=err, capsize=3, color=cols, label="100 Hz")
+    for i, s in enumerate(order):
+        a1.text(i - 0.18, r100.auroc_ci_hi.iloc[i] + 0.004, f"{r100.macro_auroc.iloc[i]:.3f}", ha="center", fontsize=8)
+        if s in r50.index:
+            v = r50.loc[s]
+            a1.bar(i + 0.18, v.macro_auroc, 0.36, yerr=[[v.macro_auroc - v.auroc_ci_lo], [v.auroc_ci_hi - v.macro_auroc]],
+                   capsize=3, color=ORANGE, alpha=0.8, label="50 Hz" if s == "limb_6" else None)
+            a1.text(i + 0.18, v.auroc_ci_hi + 0.004, f"{v.macro_auroc:.3f}", ha="center", fontsize=8, color=ORANGE)
+    a1.set_xticks(x, [label[s] for s in order], fontsize=8.5)
+    a1.set_ylim(0.75, 0.91)
+    a1.set_ylabel("macro AUROC, fold 10 (95 % CI)")
+    a1.legend(fontsize=8, loc="upper right")
+    a1.set_title("Same compact CNN (2.8k params), different inputs", fontsize=10)
+    classes = ["NORM", "STTC", "CD", "MI", "HYP"]
+    M = np.array([[r100.loc[s, f"auroc_{c}"] for c in classes] for s in order])
+    im = a2.imshow(M, cmap="Blues", vmin=0.72, vmax=0.93, aspect="auto")
+    for i in range(len(order)):
+        for j in range(len(classes)):
+            a2.text(j, i, f"{M[i, j]:.3f}", ha="center", va="center", fontsize=8,
+                    color="white" if M[i, j] > 0.87 else "k")
+    a2.set_xticks(range(len(classes)), classes)
+    a2.set_yticks(range(len(order)), [label[s].replace("\n", " ") for s in order], fontsize=8)
+    a2.set_title("Per-class AUROC at 100 Hz", fontsize=10)
+    a2.spines[:].set_visible(False)
+    fig.tight_layout()
+    save(fig, "fig_ablation.png")
+
+
 if __name__ == "__main__":
+    fig_ablation()
     fig_pipeline()
     fig_lead_comparison()
     fig_delineation()

@@ -15,7 +15,8 @@ diagnostic superclasses (NORM, MI, STTC, CD, HYP) on a RAK11300 module, a Raspbe
 Leads I/II/III baseline. Across five model families, the 3-lead to Lead I drop is about 0.05 macro
 AUC when the input features are the same. The deployed 5.7k-parameter INT8 1D-CNN reaches a macro
 AUC of **0.829** on the held-out fold, matching a 2.5M-parameter ResNet with attention trained on
-the same lead (0.831).
+the same lead (0.831). A lead ablation with a fixed compact CNN puts the full 12-lead reference at
+0.881 macro AUROC and shows that 50 Hz sampling costs under 0.01.
 
 Running this on the device required three things beyond the model:
 
@@ -49,7 +50,8 @@ end.
 
 1. A controlled comparison of five model families (gradient boosting, random forest, STFT 2D-CNN,
    lightweight 1D-CNN, ResNet with attention) on Leads I/II/III versus Lead I only, on PTB-XL's
-   patient-disjoint test fold.
+   patient-disjoint test fold. A lead-set ablation with one fixed compact CNN (12, 6 limb, 3 limb,
+   6 chest, Lead I; 100 and 50 Hz) quantifies what each lead set and sampling rate is worth.
 2. An INT8 deployment recipe for single-lead ECG. Per-window z-scoring of the input reduces the
    INT8 accuracy loss from 0.05 to under 0.001 AUC.
 3. A Lead I median-beat delineator for PR, QRS and QT, validated against GE 12SL global intervals
@@ -256,7 +258,47 @@ All numbers are on PTB-XL fold 10 (n = 2,158). We report:
   buys nothing here.
 - **Per class (deployed INT8).** CD 0.812, HYP 0.791, MI 0.786, NORM 0.887, STTC 0.870.
 
-### 5.2 Delineation
+### 5.2 Lead and sampling-rate ablation
+
+A separate ablation asks how much each lead set is worth, independent of our deployed architecture.
+It uses one compact separable CNN (2.75k–3.0k parameters), trained identically on every input
+(`ecg_12lead_ablation_study.ipynb`, executed in full by `scripts/run_lead_ablation.py`). Each
+configuration is a single run with seed 42 on fold 10. The 95 % CIs come from 1,000 bootstrap
+resamples of the test records.
+
+![Lead-set ablation with the same compact CNN](figures/fig_ablation.png)
+
+| Input | Leads | Rate | Macro AUROC [95 % CI] | Macro F1 (0.5) |
+|---|---:|---:|---|---:|
+| 12 leads | 12 | 100 Hz | 0.881 [0.872, 0.890] | 0.619 |
+| 6 limb (I, II, III, aVR, aVL, aVF) | 6 | 100 Hz | 0.854 [0.844, 0.864] | 0.541 |
+| 3 limb (I, II, III) | 3 | 100 Hz | 0.855 [0.845, 0.865] | 0.527 |
+| 6 chest (V1–V6) | 6 | 100 Hz | 0.848 [0.837, 0.859] | 0.535 |
+| 6 limb | 6 | 50 Hz | 0.856 [0.846, 0.867] | 0.553 |
+| **Lead I (hardware)** | 1 | 100 Hz | **0.803** [0.791, 0.814] | 0.410 |
+| Lead I | 1 | 50 Hz | 0.794 [0.782, 0.806] | 0.415 |
+
+Findings:
+
+- **Going from 12 leads to Lead I costs 0.078 AUROC** with this model. The CIs of Lead I and every
+  multi-lead set do not overlap.
+- **Six limb leads add nothing over three.** aVR, aVL and aVF are linear combinations of I and II,
+  so the CNN gains no information (0.854 vs 0.855).
+- **The chest leads alone are not better than the limb leads** (0.848). The 12-lead gain comes from
+  combining both views.
+- **Halving the rate to 50 Hz barely matters** (−0.009 for Lead I, +0.002 for six limb leads), so
+  100 Hz is not the accuracy bottleneck.
+- **Per class**, Lead I loses most on MI (0.878 → 0.746) and CD (0.888 → 0.766). NORM and STTC
+  stay within 0.06 of 12 leads, and HYP is weak for every input (0.77–0.79).
+- **Simple waveform summaries are not enough.** Logistic regression and random forest on 5
+  per-lead statistics (mean, std, min, max, energy) reach only 0.609 and 0.626 on Lead I (0.728 and
+  0.772 on six limb leads). Our clinical Lead I features (rhythm, intervals, quality) give 0.786
+  with XGBoost (§5.1).
+- **Architecture matters on one lead.** The deployed 5.7k-parameter CNN with z-scored input
+  reaches 0.830 float (0.829 INT8) on Lead I, against 0.803 for the 2.75k compact model. Its INT8
+  size is 25 KB, against 18 KB for the compact model.
+
+### 5.3 Delineation
 
 ![Median-beat delineation and agreement with 12SL](figures/fig_delineation.png)
 
@@ -273,7 +315,7 @@ All numbers are on PTB-XL fold 10 (n = 2,158). We report:
 - **Interpretation.** 12SL global intervals span all 12 leads, so shorter single-lead values are
   expected.
 
-### 5.3 Decisions and flags
+### 5.4 Decisions and flags
 
 At the fitted thresholds, macro F1 is 0.604 on gate-passed windows, against 0.515 with a flat 0.5
 threshold.
@@ -298,7 +340,7 @@ threshold.
 The low PPVs for TACHY and BRADY largely reflect labelling: PTB-XL codes STACH and SBRAD only for
 sinus rhythm. LONG_PR inherits the −24 ms PR bias.
 
-### 5.4 Signal quality under real noise
+### 5.5 Signal quality under real noise
 
 ![Gate rejection and accuracy under NSTDB noise](figures/fig_noise_stress.png)
 
@@ -313,7 +355,7 @@ power and amplitude), so the gate was evaluated with NSTDB noise added to fold 1
 - **Noise sensitivity of the CNN.** It tolerates baseline wander and muscle noise well. Electrode
   motion, the artifact most typical of wearables, degrades it most.
 
-### 5.5 On the RP2040 (emulated)
+### 5.6 On the RP2040 (emulated)
 
 ![Measured SRAM and latency per window](figures/fig_memory_latency.png)
 
@@ -344,7 +386,7 @@ transparency.
 **Limitations.**
 
 1. **Data and evaluation.** Results are from one public dataset recorded with clinical equipment,
-   evaluated on a single held-out fold.
+   evaluated on a single held-out fold. Each ablation configuration is a single training run.
 2. **Device timing.** The rp2040js emulator counts instruction cycles but not flash-cache misses,
    so on-board latency will be somewhat higher. Power was not measured.
 3. **Sampling rate.** At 100 Hz, QRS resolution is coarse. About 4 % of windows sit at the
@@ -396,6 +438,7 @@ python scripts/run_notebook.py --lead-set lead1 notebooks/01_preprocess.ipynb
 python scripts/fix_cache.py && python scripts/build_lead1_features.py
 python scripts/run_notebook.py --lead-set lead1 notebooks/1*.ipynb notebooks/20_quantization.ipynb notebooks/30_metrics.ipynb
 python scripts/compare_lead_sets.py
+python scripts/run_lead_ablation.py          # 12/6/3/1-lead and 50 Hz ablation (~25 min)
 python scripts/validate_delineation.py --split test
 python scripts/orchestrator.py fit && python scripts/orchestrator.py evaluate
 python scripts/compare_features.py --exe build/lead1_host.exe

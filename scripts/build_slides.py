@@ -327,6 +327,28 @@ def main():
        "that a 440 times larger network gains nothing on one lead: the information, not the model, is the limit.",
        takeaway="Deployed INT8 model: macro AUC 0.829 on Lead I", img_frac=0.6, size=15)
 
+    # 13b ---------------------------------------------------------------- ablation
+    d.figure("Ablation: what each lead set is worth", "fig_ablation.png",
+             "12 → 1 lead costs 0.078 AUROC; 50 Hz costs < 0.01; aVR/aVL/aVF add nothing",
+             "One fixed compact separable CNN (about 2.8k parameters), trained identically on every input, fold 10, "
+             "with 95 % bootstrap confidence intervals. 12 leads reach 0.881. Six limb leads equal three because "
+             "aVR, aVL and aVF are computed from I and II. Chest leads alone are no better than limb leads; the "
+             "12-lead gain comes from combining both. Lead I is clearly separated from every multi-lead set. "
+             "Halving the sampling rate barely matters, so 100 Hz is not the bottleneck. Per class, MI and CD lose "
+             "most; NORM and STTC hold up.")
+
+    d.table("Ablation: design implications",
+            ["Question", "Ablation result", "Design consequence"],
+            [["More leads?", "12 lead 0.881 · 3 limb 0.855 · Lead I 0.803", "Hardware limits us; report the gap honestly"],
+             ["Which multi-lead set?", "6 limb = 3 limb (0.854 vs 0.855)", "If an LL electrode is added, 3 leads are enough"],
+             ["Sampling rate?", "Lead I: 100 Hz 0.803 · 50 Hz 0.794", "100 Hz is adequate; 50 Hz is a fallback"],
+             ["Simple features?", "5 waveform stats: 0.61-0.63 on Lead I", "Use clinical features (XGBoost 0.786)"],
+             ["Which CNN on Lead I?", "compact 2.8k: 0.803 · ours 5.7k: 0.830", "Keep the deployed CNN (25 KB INT8)"]],
+            "Turning the ablation into decisions. The cheapest hardware upgrade with the largest gain would be a fourth "
+            "electrode (LL), which gives Leads II and III and reaches the 3-limb result.",
+            col_w=[1.6, 2.9, 2.7], size=12, row_h=Inches(0.55),
+            takeaway="Cheapest upgrade: an LL electrode (3 limb leads, +0.05 AUROC)")
+
     # 14 ----------------------------------------------------------------- per class
     d.figure("Which classes lose most", "fig_per_class_roc.png",
              "Rhythm and repolarisation survive; MI loses most (−0.06), as infarct localisation needs spatial leads",

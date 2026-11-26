@@ -100,7 +100,7 @@ trains. The 3-lead baseline notebooks, with their original outputs, are at git t
 |---|---|
 | `docs/report/mtp_report.md` | MTP report (source; renders on GitHub) |
 | `docs/report/mtp_report.docx`, `.pdf` | Same report for submission (`python scripts/build_report.py`) |
-| `docs/presentation/final_presentation.pptx` | 27-slide final deck in the mid-term template, with speaker notes (`python scripts/build_slides.py`) |
+| `docs/presentation/final_presentation.pptx` | 29-slide final deck in the mid-term template, with speaker notes (`python scripts/build_slides.py`) |
 | `docs/report/figures/` | Figures generated from the results files (`python scripts/make_report_figures.py`) |
 
 ## Data sources and attribution
